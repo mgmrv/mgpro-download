@@ -1,0 +1,2199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MG PRO</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%230f2154'/><stop offset='1' stop-color='%23040919'/></linearGradient></defs><rect width='64' height='64' rx='14' fill='url(%23g)'/><rect x='3' y='3' width='58' height='58' rx='12' fill='none' stroke='%232fa8ff' stroke-width='2.5'/><path d='M24 18 L46 32 L24 46 Z' fill='%23ff7a1a'/></svg>">
+<meta name="theme-color" content="#081233">
+<meta name="apple-mobile-web-app-title" content="MG PRO">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<script src="hls.min.js"></script>
+<style>
+/* Layout: estação de TV neon — abas no topo | categorias | lista | tela grande com brilho. Visual escuro único, de propósito. */
+:root{
+  --bg:#040919; --bg-2:#081233; --panel:rgba(10,22,60,.78); --panel-2:#0f2154; --line:#1b3574;
+  --fg:#eef4ff; --muted:#8ea5d8; --signal:#ff7a1a; --signal-2:#ffb347; --signal-ink:#1a0900;
+  --neon:#2fa8ff; --neon-2:#7cd0ff; --live:#ff3b5c;
+  --glow-o:0 0 10px rgba(255,122,26,.65),0 0 28px rgba(255,122,26,.35);
+  --glow-b:0 0 10px rgba(47,168,255,.6),0 0 26px rgba(47,168,255,.3);
+  --display:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{color:var(--fg);font:14px/1.45 var(--body);overflow:hidden;
+  background:
+    radial-gradient(900px 500px at 85% -10%,rgba(255,122,26,.16),transparent 60%),
+    radial-gradient(900px 600px at -10% 110%,rgba(47,168,255,.18),transparent 60%),
+    repeating-linear-gradient(0deg,rgba(47,168,255,.035) 0 1px,transparent 1px 40px),
+    repeating-linear-gradient(90deg,rgba(47,168,255,.035) 0 1px,transparent 1px 40px),
+    var(--bg)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+[hidden]{display:none!important}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:var(--neon)}
+
+.app{display:grid;grid-template-columns:220px 360px 1fr;grid-template-rows:64px 1fr;height:100%}
+header{grid-column:1/-1;position:relative;display:flex;align-items:center;gap:18px;padding:0 18px;background:linear-gradient(90deg,rgba(8,18,51,.95),rgba(15,33,84,.92));backdrop-filter:blur(10px)}
+header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,var(--neon),var(--signal) 55%,var(--signal-2));box-shadow:0 0 12px var(--signal),0 0 24px rgba(47,168,255,.5)}
+.brand{font:700 24px/1 var(--display);letter-spacing:.04em;display:flex;align-items:center;gap:10px;white-space:nowrap;text-shadow:0 0 8px rgba(124,208,255,.7),0 0 22px rgba(47,168,255,.45)}
+.brand b{color:var(--signal);text-shadow:0 0 8px var(--signal),0 0 24px rgba(255,122,26,.6)}
+.brand i{width:11px;height:11px;border-radius:50%;background:var(--signal);box-shadow:var(--glow-o);animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(.7);opacity:.6}}
+
+.modes{display:flex;gap:4px;background:rgba(4,9,25,.7);border:1px solid var(--line);border-radius:12px;padding:4px}
+.modes button{background:none;border:0;border-radius:8px;padding:8px 16px;cursor:pointer;color:var(--muted);font:600 14px var(--display);letter-spacing:.03em;white-space:nowrap;transition:color .2s,background .2s,box-shadow .2s}
+.modes button:hover{color:var(--fg);text-shadow:0 0 8px rgba(124,208,255,.6)}
+.modes button.on{color:#fff;background:linear-gradient(180deg,rgba(255,122,26,.28),rgba(255,122,26,.08));box-shadow:inset 0 0 0 1px rgba(255,122,26,.7),var(--glow-o);text-shadow:0 0 8px rgba(255,179,71,.9)}
+.modes span{font:500 11px var(--mono);color:var(--neon-2);margin-left:7px;opacity:.85}
+
+.search{flex:1;max-width:420px;margin-left:auto;position:relative}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--neon);fill:none;stroke-width:2;filter:drop-shadow(0 0 4px var(--neon));pointer-events:none}
+.search input{width:100%;background:rgba(4,9,25,.8);border:1px solid var(--line);border-radius:999px;padding:10px 16px 10px 38px;transition:border-color .2s,box-shadow .2s}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{outline:none;border-color:var(--neon);box-shadow:0 0 0 1px var(--neon),var(--glow-b)}
+
+.btn{background:rgba(15,33,84,.7);border:1px solid rgba(47,168,255,.45);border-radius:10px;padding:9px 16px;cursor:pointer;white-space:nowrap;font-weight:500;transition:transform .15s,box-shadow .2s,border-color .2s}
+.btn:hover{border-color:var(--neon);box-shadow:var(--glow-b);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--signal-2),var(--signal) 55%,#ff4d1a);color:var(--signal-ink);border:0;font:700 14px var(--display);letter-spacing:.04em;box-shadow:var(--glow-o),inset 0 1px 0 rgba(255,255,255,.4)}
+.btn.primary:hover{box-shadow:0 0 14px rgba(255,122,26,.9),0 0 40px rgba(255,122,26,.55),inset 0 1px 0 rgba(255,255,255,.5)}
+.btn:active{transform:translateY(1px)}
+
+.cats{overflow:auto;padding:14px 10px;background:rgba(6,14,40,.72);border-right:1px solid var(--line)}
+.label{font:600 11px var(--display);text-transform:uppercase;letter-spacing:.14em;color:var(--neon-2);padding:8px 10px 8px;text-shadow:0 0 8px rgba(47,168,255,.5)}
+.cat{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:8px;padding:9px 11px;cursor:pointer;margin-bottom:2px;transition:background .15s,border-color .15s,box-shadow .15s}
+.cat span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat span:last-child{font:500 12px var(--mono);color:var(--muted)}
+.cat:hover{background:rgba(47,168,255,.08);border-color:rgba(47,168,255,.3)}
+.cat.on{background:linear-gradient(90deg,rgba(47,168,255,.35),rgba(47,168,255,.08));border-color:var(--neon);box-shadow:var(--glow-b);color:#fff}
+.cat.on span:last-child{color:#dff1ff}
+
+.list{overflow:auto;background:rgba(4,9,25,.55);border-right:1px solid var(--line)}
+.back{display:flex;align-items:center;gap:8px;width:100%;background:rgba(15,33,84,.9);border:0;border-bottom:1px solid var(--line);padding:13px 14px;cursor:pointer;text-align:left;font:700 15px var(--display);color:var(--signal-2);text-shadow:0 0 8px rgba(255,122,26,.6)}
+.back:hover{background:rgba(255,122,26,.12)}
+.season{position:sticky;top:0;z-index:1;background:rgba(8,18,51,.96);backdrop-filter:blur(6px);padding:9px 14px;font:600 11px var(--display);text-transform:uppercase;letter-spacing:.14em;color:var(--signal);text-shadow:0 0 8px rgba(255,122,26,.6);border-bottom:1px solid var(--line)}
+.ch{position:relative;display:grid;grid-template-columns:42px 44px 1fr 28px;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(27,53,116,.6);cursor:pointer;transition:background .15s}
+.ch.poster{grid-template-columns:42px 42px 1fr 28px}
+.ch.poster .logo{width:42px;height:60px}
+.ch:hover{background:rgba(47,168,255,.09)}
+.ch:hover .logo{box-shadow:0 0 0 1px var(--neon),var(--glow-b)}
+.ch.on{background:linear-gradient(90deg,rgba(255,122,26,.22),transparent 80%)}
+.ch.on::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:3px;background:var(--signal);box-shadow:var(--glow-o)}
+.num{font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.ch.on .num{color:var(--signal-2);text-shadow:0 0 6px var(--signal)}
+.logo{width:44px;height:30px;border-radius:6px;background:var(--panel-2);display:grid;place-items:center;overflow:hidden;font:600 11px var(--display);color:var(--neon-2);transition:box-shadow .2s}
+.logo img{width:100%;height:100%;object-fit:contain}
+.ch:not(.poster) .logo.has-img{background:#eef3fb;padding:2px}
+.ch.poster .logo img{object-fit:cover}
+.name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.sub{display:block;font-size:12px;color:var(--muted);font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub em{font-style:normal;color:var(--neon-2)}
+.fav{background:none;border:0;cursor:pointer;font-size:17px;color:#2a4687;padding:0;transition:color .15s,text-shadow .15s,transform .15s}
+.fav:hover{transform:scale(1.2);color:var(--signal-2)}
+.fav.on{color:var(--signal);text-shadow:0 0 8px var(--signal),0 0 18px rgba(255,122,26,.7)}
+.empty{padding:36px 20px;color:var(--muted);text-align:center}
+.more{padding:10px 14px 14px;color:var(--muted);font-size:12px}
+
+.stage{display:flex;flex-direction:column;min-width:0;overflow:auto;padding:18px 18px 0}
+.screen{position:relative;background:#000;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;border:1px solid rgba(47,168,255,.55);box-shadow:0 0 0 1px rgba(47,168,255,.15),0 0 30px rgba(47,168,255,.28),0 0 70px rgba(255,122,26,.12)}
+video{width:100%;height:100%;display:block;background:#000}
+.osd{position:absolute;left:16px;top:16px;display:flex;gap:8px;pointer-events:none}
+.pill{background:rgba(4,9,25,.75);border:1px solid rgba(47,168,255,.5);border-radius:6px;padding:3px 9px;font:500 12px var(--mono);backdrop-filter:blur(4px)}
+.pill.live{background:var(--live);border-color:var(--live);color:#fff;box-shadow:0 0 10px var(--live),0 0 22px rgba(255,59,92,.5);animation:pulse-live 1.6s ease-in-out infinite}
+@keyframes pulse-live{50%{box-shadow:0 0 4px var(--live)}}
+.msg .fail{display:flex;flex-direction:column;gap:8px;align-items:center;max-width:46ch}
+.msg .fail b{color:var(--fg);font-size:15px}
+.msg .fail span{font-size:13px}
+.msg .fail .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.msg .fail .btn{padding:7px 12px;font-size:13px}
+.msg{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);text-align:center;padding:24px;background:radial-gradient(circle at center,rgba(47,168,255,.1),transparent 60%)}
+.now{padding:20px 4px 18px;display:flex;flex-direction:column;gap:6px}
+.now h2{font:700 30px/1.1 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance;text-shadow:0 0 18px rgba(47,168,255,.35)}
+.now p{margin:0;color:var(--muted)}
+.plot{color:var(--fg);max-width:65ch}
+.keys{margin-top:8px;font-size:12px;color:var(--muted)}
+kbd{font:500 11px var(--mono);border:1px solid rgba(47,168,255,.5);border-radius:4px;padding:1px 5px;color:var(--neon-2)}
+
+.epg{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(6,14,40,.6)}
+.epg h4{margin:0;padding:11px 14px;font:600 11px var(--display);text-transform:uppercase;letter-spacing:.14em;color:var(--neon-2);background:rgba(15,33,84,.7)}
+.prog{display:grid;grid-template-columns:108px 1fr;gap:12px;padding:10px 14px;border-top:1px solid var(--line)}
+.prog time{font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.prog.on{background:linear-gradient(90deg,rgba(255,122,26,.14),transparent)}
+.prog.on time{color:var(--signal-2)}
+.prog strong{font-weight:600;display:block}
+.prog small{color:var(--muted);display:block;margin-top:2px}
+.bar{height:4px;background:var(--line);border-radius:2px;margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--signal),var(--signal-2));box-shadow:0 0 8px var(--signal)}
+
+.sheet{position:fixed;inset:0;background:rgba(2,5,15,.78);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:20;padding:16px}
+.card{background:linear-gradient(180deg,rgba(15,33,84,.96),rgba(8,18,51,.98));border:1px solid rgba(47,168,255,.55);border-radius:16px;width:min(540px,100%);max-height:90vh;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--glow-b),0 30px 80px rgba(0,0,0,.6)}
+.card h3{font:700 24px var(--display);margin:0;text-shadow:0 0 14px rgba(47,168,255,.5)}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1}
+.tabs .on{border-color:var(--signal);color:var(--signal-2);box-shadow:var(--glow-o)}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;color:var(--muted)}
+.field input{background:rgba(4,9,25,.8);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;transition:border-color .2s,box-shadow .2s}
+.field input:focus{outline:none;border-color:var(--neon);box-shadow:var(--glow-b)}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.note{font-size:12px;color:var(--muted);margin:0}
+.err{color:#ff9bb0;font-size:13px;margin:0}
+.saved{display:flex;flex-direction:column;gap:6px}
+.sl{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:rgba(4,9,25,.6);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.sl.on{border-color:var(--signal);box-shadow:var(--glow-o)}
+.sl strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sl small{color:var(--muted);font-size:12px}
+.sl .btn{padding:5px 11px;font-size:13px}
+.sl .del{background:none;border:1px solid var(--line);color:var(--muted)}
+.sl .del.armed{border-color:var(--live);color:#ff9bb0;box-shadow:0 0 10px rgba(255,59,92,.5)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:linear-gradient(135deg,var(--signal-2),var(--signal));color:var(--signal-ink);font:700 14px var(--display);padding:11px 20px;border-radius:10px;z-index:30;box-shadow:var(--glow-o)}
+
+.sheet.login{background:radial-gradient(800px 500px at 50% 0%,rgba(255,122,26,.18),transparent 60%),radial-gradient(800px 500px at 50% 100%,rgba(47,168,255,.2),transparent 60%),rgba(4,9,25,.96);z-index:25}
+.sheet.login .card{width:min(400px,100%);gap:16px}
+.brand.big{font-size:34px;justify-content:center;padding:6px 0 2px}
+#loginBtn{padding:12px;font-size:16px}
+/* ===== Catálogo de filmes e séries ===== */
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:10px}   /* 4 capas por linha */
+#list .ch.card{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:6px;border:0;background:none;border-radius:10px;cursor:pointer;min-width:0}
+#list .ch.card::before{display:none}
+#list .ch.card .poster{position:relative;display:block;width:100%;padding-top:150%;border-radius:8px;overflow:hidden;background:var(--panel-2)}
+#list .ch.card .poster b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 20px var(--display);color:var(--neon-2)}
+#list .ch.card .poster img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+#list .ch.card .t{font-size:13px;line-height:1.25;max-height:2.5em;overflow:hidden;font-weight:500}
+#list .ch.card .r{font-size:11px;color:var(--signal-2)}
+#list .ch.card.fav-on .poster{box-shadow:inset 0 0 0 2px var(--signal)}
+#list .ch.card:hover{background:rgba(47,168,255,.09)}
+html.tv #list .ch.card:focus{outline:3px solid var(--signal);outline-offset:0;background:rgba(255,122,26,.18)}
+/* Resumo do guia embaixo da prévia (só na TV) */
+.epgmore{display:none}
+html.tv .epgmore{display:flex;gap:14px;grid-column:1 / -1;grid-row:3;min-width:0;margin:0 0 10px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(6,14,40,.6);overflow:hidden}
+html.tv .em-now{flex:1 1 60%;min-width:0;display:flex;flex-direction:column;gap:3px}
+html.tv .em-tag{font:600 11px var(--display);letter-spacing:.12em;color:var(--signal-2)}
+html.tv .em-now b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.tv .em-now p{margin:0;font-size:14px;line-height:1.4;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+html.tv .em-next{flex:0 1 40%;min-width:0;margin:0;padding:0 0 0 14px;list-style:none;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:6px;justify-content:center}
+html.tv .em-next li{display:flex;gap:8px;min-width:0;font-size:14px}
+html.tv .em-next time{font:500 12px var(--mono);color:var(--neon-2);flex:none;padding-top:1px}
+html.tv .em-next span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.detailsmode .epgmore{display:none!important}
+.d-sub{display:flex;align-items:center;gap:10px;margin:0;font:600 13px var(--display);letter-spacing:.06em;color:var(--neon-2);text-transform:uppercase}
+.d-sub .chip{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;font:600 13px var(--body);color:var(--fg);text-transform:none;letter-spacing:0}
+.d-season .t{font-weight:600}
+
+/* Filmes e Séries: grade mais larga (4 capas maiores) e painel do título mais estreito */
+@media (min-width:901px){ body.detailsmode .app{grid-template-columns:220px minmax(0,1.3fr) minmax(0,1fr)} }
+html.tv body.detailsmode .app{grid-template-columns:17% 46% 1fr;grid-template-columns:min(17vw,300px) min(46vw,800px) 1fr}
+html.tv .d-head h2{font-size:21px}
+html.tv .d-meta{font-size:13px}
+html.tv .d-poster{width:30%}
+html.tv .d-actions .btn{padding:10px 16px;font-size:14px}
+
+/* Painel do título: ocupa o lugar da prévia */
+body.detailsmode:not(.full) .screen,body.detailsmode .now,body.detailsmode .epg{display:none!important}
+.details{display:flex;flex-direction:column;gap:12px;min-width:0;padding-bottom:16px;overflow:auto}
+html.tv .details{grid-column:1 / -1;grid-row:1 / span 2;max-height:100%}
+.d-empty{padding:60px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+.d-hero{position:relative;border-radius:14px;overflow:hidden;background:#000;border:1px solid var(--line);min-height:170px;padding-top:38%}
+.d-bg{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+.d-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,9,25,.95) 0%,rgba(4,9,25,.55) 55%,rgba(4,9,25,.25) 100%)}
+.d-top{position:absolute;left:0;right:0;bottom:0;top:0;display:flex;align-items:flex-end;gap:16px;padding:16px}
+.d-poster{position:relative;flex:none;width:26%;max-width:170px;min-width:80px;border-radius:10px;overflow:hidden;background:var(--panel-2);box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.d-poster::before{content:"";display:block;padding-top:150%}
+.d-poster b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 22px var(--display);color:var(--neon-2)}
+.d-poster img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.d-head{min-width:0;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.d-head h2{margin:0;font:700 26px/1.1 var(--display);text-wrap:balance}
+.d-meta{margin:0;color:var(--neon-2);font-size:14px}
+.d-plot{margin:0;line-height:1.5;max-width:75ch;color:var(--fg)}
+.d-cast{margin:0;color:var(--muted);font-size:13px}
+.d-actions{display:flex;gap:10px;flex-wrap:wrap}
+.d-actions .btn{padding:11px 20px;font-size:15px}
+.d-eps{display:flex;flex-direction:column;gap:10px}
+.d-seasons{display:flex;gap:6px;flex-wrap:wrap}
+.d-seasons .chip{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;font:600 13px var(--body);color:var(--muted)}
+.d-seasons .chip:hover{border-color:var(--neon);color:var(--fg)}
+.d-seasons .chip.on{border-color:var(--signal);color:var(--signal-2);background:rgba(255,122,26,.15)}
+.d-eplist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.d-ep{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:11px 14px;cursor:pointer;color:var(--fg)}
+.d-ep:first-child{border-top:0}
+.d-ep:hover{background:rgba(47,168,255,.09)}
+.d-ep .n{font:500 13px var(--mono);color:var(--signal-2)}
+.d-ep .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d-ep .d{font-size:12px;color:var(--muted)}
+html.tv .d-ep:focus,html.tv .chip:focus{outline:3px solid var(--signal);outline-offset:-3px;background:rgba(255,122,26,.18)}
+html.tv .d-plot{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:1100px){
+  .grid{gap:6px;padding:8px}
+  #list .ch.card{padding:4px}
+  #list .ch.card .t{font-size:12px}
+  #list .ch.card .poster b{font-size:15px}
+  .d-head h2{font-size:20px}
+  .d-plot{font-size:13px}
+}
+
+/* ===== Modo TV (controle remoto) ===== */
+/* Mais leve na TV: sem desfoque, brilhos grandes nem animações */
+html.tv body{background:var(--bg)}
+html.tv header,html.tv .season,html.tv .sheet,html.tv .pill,html.tv .cathint{-webkit-backdrop-filter:none;backdrop-filter:none}
+html.tv *{transition:none!important}
+html.tv .pill.live,html.tv .brand i{animation:none}
+html.tv .screen,html.tv .modes button.on,html.tv .cat.on,html.tv .btn.primary,html.tv .ch:focus,html.tv .cat:focus{box-shadow:none}
+html.tv .brand,html.tv .brand b,html.tv .now h2,html.tv .label,html.tv .season{text-shadow:none}
+/* Player nativo (app Android): o vídeo aparece por baixo, pelo "buraco" transparente da tela */
+html.native body{background:transparent}
+html.native .screen{background:transparent}
+html.native video{visibility:hidden}
+.tvkeys{display:none}
+html.tv .tvkeys{display:block;line-height:2}
+html.tv .pckeys{display:none}
+kbd.kr{color:#ff4d4d;border-color:#ff4d4d}kbd.kg{color:#3ddc97;border-color:#3ddc97}kbd.ky{color:#ffd23d;border-color:#ffd23d}kbd.kb{color:#2fa8ff;border-color:#2fa8ff}
+html.tv body{font-size:16px}
+html.tv .ch{padding:12px 16px}
+html.tv .name{font-size:16px}
+html.tv .cat{padding:11px 12px;font-size:15px}
+html.tv :focus{outline:none}
+html.tv .ch:focus,html.tv .cat:focus,html.tv .back:focus{outline:3px solid var(--signal);outline-offset:-3px;background:rgba(255,122,26,.2);box-shadow:inset 0 0 18px rgba(255,122,26,.35)}
+html.tv .btn:focus,html.tv .modes button:focus,html.tv .chip:focus,html.tv .ltabs button:focus,html.tv .tabs button:focus,html.tv .seg button:focus,html.tv input:focus,html.tv select:focus,html.tv .switch input:focus,html.tv .switch-s input:focus{outline:3px solid var(--signal);outline-offset:2px;box-shadow:var(--glow-o)}
+html.tv .screen:focus{outline:3px solid var(--signal);outline-offset:3px}
+html.tv .fav{pointer-events:none}
+/* Layout da TV: categorias | lista de canais larga | prévia média com o guia embaixo */
+html.tv body{overflow:hidden}
+html.tv .app{grid-template-columns:17% 34% 1fr;grid-template-columns:min(17vw,300px) min(34vw,520px) 1fr;grid-template-rows:64px 1fr;height:100%}
+.cathint{display:none}
+html.tv header{flex-wrap:nowrap;padding-block:0}
+html.tv .modes,html.tv .search{order:0;flex-basis:auto}
+html.tv .search{max-width:380px;min-width:0}
+html.tv .stage{order:0;padding:10px 12px 0}
+html.tv .cats{display:block;overflow:auto;padding:10px 6px;border-right:1px solid var(--line);border-bottom:0}
+html.tv .cats .label{display:block;padding:6px 8px}
+html.tv .cat{width:100%;white-space:nowrap;margin:0 0 4px;padding:12px 12px;font-size:16px}
+html.tv .cat span:last-child{font-size:13px}
+html.tv .list{max-height:none;border-right:1px solid var(--line)}
+html.tv .ch{grid-template-columns:44px 60px minmax(0,1fr) 18px;gap:12px;padding:12px 14px}
+html.tv .ch .logo{width:60px;height:40px}
+html.tv .ch.poster .logo{width:44px;height:64px}
+html.tv .name{font-size:18px}
+html.tv .sub{font-size:13px}
+html.tv .num{font-size:14px}
+html.tv .fav{font-size:14px}
+/* Vídeo em cima ocupando o máximo; embaixo, numa faixa só: nome do canal à esquerda e guia à direita */
+html.tv .stage{overflow:hidden;display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);grid-template-rows:auto auto auto;align-content:start;column-gap:12px}
+html.tv .screen{grid-column:1 / -1;grid-row:1;min-height:0;height:auto;aspect-ratio:16/9}
+html.tv .now{grid-column:1;grid-row:2;min-width:0}
+html.tv .epg{grid-column:2;grid-row:2;align-self:center;min-width:0}
+html.tv body:not(.has-epg) .now{grid-column:1 / -1}
+html.tv .screen video{object-fit:contain}
+html.tv .now,html.tv .epg{flex:none}
+html.tv .now{padding:8px 2px 8px;gap:2px}
+html.tv .now h2{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.tv .now p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.tv .plot{display:none}
+html.tv body.playing .tvkeys{display:none}
+/* Guia compacto na TV: Agora e A seguir lado a lado, logo abaixo do vídeo */
+html.tv .epg{display:flex;margin:8px 0 10px;border-radius:10px;max-height:72px;overflow:hidden}
+html.tv .epg h4{display:none}
+html.tv .epg .prog{flex:1 1 0;min-width:0;display:block;border-top:0;padding:8px 12px}
+html.tv .epg .prog + .prog{border-left:1px solid var(--line)}
+html.tv .epg .prog:nth-of-type(n+3){display:none}
+html.tv .epg .prog time{display:block;font-size:12px}
+html.tv .epg .prog strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+html.tv .epg .prog small{display:none}
+html.tv .epg .prog.empty time{display:none}
+html.tv .epg .prog:first-of-type time::before{content:"AGORA · ";color:var(--signal-2);font-weight:600}
+html.tv .epg .prog:nth-of-type(2) time::before{content:"A SEGUIR · ";color:var(--neon-2);font-weight:600}
+@media (max-width:1100px){
+  html.tv body{font-size:14px}
+  html.tv .ch{grid-template-columns:38px 52px minmax(0,1fr) 16px;gap:10px;padding:10px 12px}
+  html.tv .ch .logo{width:52px;height:35px}
+  html.tv .name{font-size:16px}
+  html.tv .cat{font-size:15px;padding:11px 10px}
+  html.tv .modes button{padding:6px 10px;font-size:13px}
+  html.tv .brand{font-size:20px}
+  html.tv .tvkeys{font-size:11px;line-height:1.8}
+}
+body.full .screen{position:fixed;left:0;top:0;width:100vw;height:100vh;max-width:none;aspect-ratio:auto;border:0;border-radius:0;z-index:45;box-shadow:none}
+body.full .screen video{object-fit:contain}
+body.full header,body.full .cats,body.full .list,body.full .now,body.full .epg,body.full .epgmore,body.full .details,body.full .toast{visibility:hidden}
+body.full .screen{border:0}
+body.full .osd{display:none}
+.tvosd{position:fixed;left:50%;bottom:calc(48px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;display:grid;grid-template-columns:auto 1fr;column-gap:18px;align-items:center;min-width:min(560px,90vw);max-width:90vw;padding:16px 24px;border-radius:14px;background:linear-gradient(90deg,rgba(8,18,51,.95),rgba(15,33,84,.92));border:1px solid var(--neon);box-shadow:var(--glow-b),0 20px 60px rgba(0,0,0,.6)}
+.tvosd b{grid-row:span 2;font:700 40px/1 var(--display);color:var(--signal-2);text-shadow:0 0 12px var(--signal);font-variant-numeric:tabular-nums}
+.tvosd span{font:700 22px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tvosd small{color:var(--muted);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn.inst{display:inline-flex;align-items:center;gap:7px;border-color:rgba(255,122,26,.55)}
+.btn.inst svg{width:16px;height:16px;fill:none;stroke:var(--signal-2);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px var(--signal))}
+.btn.inst:hover{border-color:var(--signal);box-shadow:var(--glow-o)}
+#instEd{z-index:35}
+.inst-head{display:flex;gap:14px;align-items:center}
+.inst-head img{border-radius:14px;box-shadow:var(--glow-b);flex:none}
+.inst-head h3{margin:0 0 2px}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:st}
+.steps li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;counter-increment:st}
+.steps li::before{content:counter(st);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--display);color:var(--signal-ink);background:linear-gradient(135deg,var(--signal-2),var(--signal));box-shadow:var(--glow-o)}
+.steps b{color:var(--fg)}
+.alt{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.switch-s{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
+@media (max-width:900px){.btn.inst span{display:none}.btn.inst{padding:9px 11px}}
+.ltabs{display:flex;gap:6px}
+.ltabs button{flex:1;padding:8px 10px;font-size:13px}
+.ltabs .on{border-color:var(--signal);color:var(--signal-2);box-shadow:var(--glow-o)}
+#dnsEd{z-index:40}
+#dnsEd .card{border-color:var(--signal);box-shadow:var(--glow-o),0 30px 80px rgba(0,0,0,.6)}
+.dnsrow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:end}
+.dnsrow .n{font:700 14px var(--display);color:var(--signal-2);padding-bottom:11px;text-align:center}
+.dnsrow .btn{padding:9px 12px;font-size:13px}
+.dst{grid-column:2/-1;font-size:12px;margin-top:-4px;min-height:0}
+#dnsArea{background:rgba(4,9,25,.8);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;font:500 13px/1.5 var(--mono);color:var(--fg);resize:vertical}
+#dnsArea:focus{outline:none;border-color:var(--neon);box-shadow:var(--glow-b)}
+.dnstest{display:flex;flex-direction:column;gap:2px;max-height:180px;overflow:auto;font:500 12px var(--mono)}
+.dnstest .dt{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid var(--line)}
+.dnstest .dt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dnstest b.ok{color:#3ddc97}.dnstest b.bad{color:#ff9bb0}.dnstest b.wait{color:var(--muted)}
+.dst.ok{color:#3ddc97}.dst.bad{color:#ff9bb0}.dst.wait{color:var(--muted)}
+.src{font-size:12px;color:var(--neon-2);border:1px solid rgba(47,168,255,.4);border-radius:8px;padding:8px 10px}
+.acct{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:linear-gradient(90deg,rgba(47,168,255,.16),rgba(255,122,26,.1));border:1px solid rgba(47,168,255,.5);border-radius:12px;padding:12px 14px}
+.acct strong{display:block;font:700 16px var(--display)}
+.acct small{color:var(--muted);font-size:12px}
+.acct .warn{color:var(--signal-2)}
+.acct .btn{padding:6px 12px;font-size:13px}
+@media (max-width:900px){
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;grid-template-rows:auto;height:auto}
+  header{flex-wrap:wrap;padding-block:12px}
+  .modes{order:3;flex-basis:100%;overflow-x:auto}
+  .modes button{flex:1}
+  .search{order:4;max-width:none;flex-basis:100%}
+  .stage{order:-1;padding:12px 12px 0}
+  .cats{display:flex;gap:6px;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
+  .cats .label{display:none}
+  .cat{width:auto;white-space:nowrap;margin:0}
+  .list{max-height:60vh;border-right:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><i></i>MG <b>PRO</b></div>
+    <div class="modes" id="modes">
+      <button data-mode="live" class="on">TV ao vivo<span id="cLive">0</span></button>
+      <button data-mode="movie">Filmes<span id="cMovie">0</span></button>
+      <button data-mode="series">Séries<span id="cSeries">0</span></button>
+    </div>
+    <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Buscar canal, filme ou série…  ( / )" autocomplete="off"></div>
+    <button class="btn inst" id="installBtn" type="button" title="Criar atalho na tela"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 19h14"/></svg><span>Criar atalho</span></button>
+    <button class="btn primary" id="openSheet">Minhas listas</button>
+  </header>
+
+  <nav class="cats" id="cats"></nav>
+  <section class="list" id="list"></section>
+
+  <main class="stage">
+    <div class="screen">
+      <video id="v" controls playsinline></video>
+      <div class="osd" id="osd" hidden><span class="pill live" id="osdTag">AO VIVO</span><span class="pill" id="osdNum"></span></div>
+      <div class="msg" id="msg">Escolha algo para assistir</div>
+    </div>
+    <div class="now">
+      <h2 id="nowName">Nada tocando</h2>
+      <p id="nowSub">Carregue sua lista em “Minhas listas”.</p>
+      <p class="plot" id="nowPlot" hidden></p>
+      <div class="keys tvkeys"><kbd>OK</kbd> assistir · <kbd>OK</kbd> de novo: tela cheia · <kbd>CH+</kbd> <kbd>CH−</kbd> trocar canal · <kbd>0–9</kbd> ir ao canal · <kbd class="kr">●</kbd> favoritar · <kbd class="kg">●</kbd> TV/Filmes/Séries · <kbd class="ky">●</kbd> buscar · <kbd class="kb">●</kbd> minha conta</div>
+      <div class="keys pckeys"><kbd>↑</kbd> <kbd>↓</kbd> trocar · <kbd>F</kbd> tela cheia · <kbd>/</kbd> buscar · <kbd>S</kbd> favoritar · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> TV / Filmes / Séries</div>
+    </div>
+    <section class="epg" id="epg" hidden></section>
+    <section class="epgmore" id="epgMore" hidden></section>
+    <section class="details" id="details" hidden></section>
+  </main>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="card" role="dialog" aria-labelledby="sheetTitle">
+    <h3 id="sheetTitle">Minhas listas</h3>
+    <div id="acct" class="acct" hidden></div>
+    <div id="saved" class="saved"></div>
+    <div id="addBox" class="stack">
+    <div class="label" style="padding:4px 0 0">Adicionar nova lista</div>
+    <div class="field"><label for="lname">Nome da lista</label><input id="lname" placeholder="Ex.: Lista da sala" autocomplete="off"></div>
+    <div class="tabs">
+      <button class="btn on" data-tab="xtream">Xtream Codes</button>
+      <button class="btn" data-tab="url">Link M3U</button>
+      <button class="btn" data-tab="file">Arquivo</button>
+    </div>
+    <div data-pane="xtream" class="stack">
+      <div class="field"><label for="xs">Servidor</label><input id="xs" placeholder="http://servidor.com:8080"></div>
+      <div class="field"><label for="xu">Usuário</label><input id="xu" autocomplete="off"></div>
+      <div class="field"><label for="xp">Senha</label><input id="xp" type="password" autocomplete="off"></div>
+      <p class="note">Com Xtream Codes você recebe TV, Filmes, Séries e o guia de programação.</p>
+    </div>
+    <div data-pane="url" class="field" hidden>
+      <label for="m3uUrl">Endereço da lista (.m3u / .m3u8)</label>
+      <input id="m3uUrl" placeholder="http://seu-provedor.com/lista.m3u">
+    </div>
+    <div data-pane="file" class="field" hidden>
+      <label for="m3uFile">Arquivo .m3u do seu computador</label>
+      <input id="m3uFile" type="file" accept=".m3u,.m3u8,.txt">
+    </div>
+    <div data-epg class="stack" hidden>
+      <div class="field"><label for="epgUrl">Guia de programação (EPG XMLTV), opcional</label><input id="epgUrl" placeholder="http://seu-provedor.com/epg.xml ou .xml.gz"></div>
+      <div class="field"><label for="epgFile">Ou arquivo de EPG do computador</label><input id="epgFile" type="file" accept=".xml,.gz,.xmltv"></div>
+      <p class="note">Se a sua lista já traz o endereço do guia, ele é lido sozinho. Deixe em branco nesse caso.</p>
+    </div>
+    <p class="note">A lista fica salva neste navegador e abre sozinha da próxima vez. Se o provedor bloquear o link, baixe o arquivo .m3u e use a aba “Arquivo”.</p>
+    </div>
+    <p class="err" id="err" hidden></p>
+    <div class="row">
+      <button class="btn" id="demo">Usar exemplos</button>
+      <button class="btn" id="closeSheet">Fechar</button>
+      <button class="btn primary" id="load">Salvar e abrir</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="tvosd" id="tvosd" hidden><b id="tvosdNum"></b><span id="tvosdName"></span><small id="tvosdSub"></small></div>
+
+<div class="sheet login" id="login" hidden>
+  <form class="card" id="loginForm" novalidate>
+    <div class="brand big"><i></i>MG <b>PRO</b></div>
+    <h3 id="loginTitle">Entrar</h3>
+    <div class="ltabs" id="ltabs" hidden><button type="button" class="btn on" data-lt="dns">Usuário e senha</button><button type="button" class="btn" data-lt="code">Código</button></div>
+    <p class="note" id="loginNote">Use o código e a senha que você recebeu do seu fornecedor. Você só precisa fazer isso uma vez neste computador.</p>
+    <div class="field"><label for="lc" id="lcLabel">Código</label><input id="lc" placeholder="MG-000000" autocomplete="username" autocapitalize="characters" spellcheck="false"></div>
+    <div class="field"><label for="lpw">Senha</label><input id="lpw" type="password" autocomplete="current-password"></div>
+    <p class="err" id="loginErr" hidden></p>
+    <button class="btn primary" id="loginBtn" type="submit">Entrar</button>
+  </form>
+</div>
+
+<div class="sheet" id="instEd" hidden>
+  <div class="card" role="dialog" aria-labelledby="instTitle">
+    <div class="inst-head"><img id="instIcon" alt="" width="56" height="56"><div><h3 id="instTitle">Criar atalho do MG PRO</h3><p class="note" id="instDev"></p></div></div>
+    <div id="instBody" class="stack"></div>
+    <label class="switch-s"><input type="checkbox" id="instNever"> Não mostrar este aviso de novo</label>
+    <div class="row"><button class="btn" type="button" id="instClose">Fechar</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="dnsEd" hidden>
+  <div class="card" role="dialog" aria-labelledby="dnsTitle">
+    <h3 id="dnsTitle">Servidores (DNS)</h3>
+    <div id="dnsLock" class="stack">
+      <p class="note">Área restrita. Digite a senha de administrador.</p>
+      <div class="field"><label for="dnsPw">Senha</label><input id="dnsPw" type="password" autocomplete="off"></div>
+      <p class="err" id="dnsErr" hidden></p>
+      <div class="row"><button class="btn" data-d="close" type="button">Fechar</button><button class="btn primary" data-d="unlock" type="button">Entrar</button></div>
+    </div>
+    <div id="dnsBody" class="stack" hidden></div>
+  </div>
+</div>
+
+<!-- Configuração do app (DNS embaralhadas e senha do editor). Não edite à mão: use o editor (segure M + G). -->
+<script id="mgcfg" type="application/json">{"d":"FmU4JjtTXkFcOjA/PikNFwcHKH1oYm0PRgYHOTdqfWBUVUAEOig8NGFQDRoWd39gcGMBDBoHPX1/fS4NExkcISF+ISZXAVRLfWV8cCdXEB5JYmgnYGFUEwEfK2kjOztGXlZDb2tyOjtXFFRcYiV+JThMCAhdPi4kN3UbVExfby8kJj8ZS0EEYzAnPSNFSh0aOSJqan8BSEwbOTMgaGAMB0AEOig8NGFQDRoWd39gcGMBDBoHPX1/fThUShkEIis2fDxKEAtJdXdyfm1LEBoDd2h/JSBPAkAVITIjIWFQDRoWd39gcGMBDBoHPX1/fTVGARsAYzQ5JioZXF5RYWU4JjtTXkFcLGkqNypWF0AAJDM1aHcTRkJRJTMkInUMSwxdNyI1JzwNFwcHKH1oYm0PRgYHOTdqfWBBVUAJKCIlIWFQDRoWd39gcGMBDBoHPX1/fSwNHgsWODR+ISZXAVRLfWV8cCdXEB5JYmgzY2FZAQsGPmkjOztGXlZDb2tyOjtXFFRcYiN+KCpGER1dPi4kN3UbVExfby8kJj8ZS0EXfGkqNypWF0AAJDM1aHcTRkJRJTMkInUMSwtdNyI1JzwNFwcHKH1oYm0PRgYHOTdqfWBGVUAJKCIlIWFQDRoWd39gcGMBDBoHPX1/fS5PCB4bLGkjOztGXlZDb2tyOjtXFFRcYnZ+MyNPFAYSYzQ5JioZXF5RYWU4JjtTXkFcLGkxPiNTDA9dPi4kN3UbVExfby8kJj8ZS0FBYyY8Pj9LBUAAJDM1aHcTRkJRJTMkInUMSwxdLCs8IidCSh0aOSJqan8BSEwbOTMgaGAMV0ASISsgOi4NFwcHKH1oYm1+","p":"148b24a375358ba3a191b102d23802eec33d941dcae29ece855a216df5444eeb"}</script>
+
+<script>
+/* Complementos para navegadores antigos (TVs LG e Samsung a partir de ~2018) */
+(function(){
+  if (!Object.values) Object.values = function(o){ return Object.keys(o).map(function(k){ return o[k]; }); };
+  if (!Object.entries) Object.entries = function(o){ return Object.keys(o).map(function(k){ return [k, o[k]]; }); };
+  if (!Object.fromEntries) Object.fromEntries = function(it){ var o = {}; Array.from(it).forEach(function(p){ o[p[0]] = p[1]; }); return o; };
+  if (!Array.prototype.flat) Object.defineProperty(Array.prototype, 'flat', { configurable:true, writable:true, value:function(d){ d = d === undefined ? 1 : d; return this.reduce(function(a, v){ return a.concat(Array.isArray(v) && d > 0 ? v.flat(d - 1) : v); }, []); } });
+  if (!String.prototype.padStart) String.prototype.padStart = function(n, c){ var s = String(this); c = c === undefined ? ' ' : String(c); while (s.length < n) s = c + s; return s.slice(s.length - Math.max(n, String(this).length)); };
+  if (!String.prototype.matchAll) String.prototype.matchAll = function(re){ var r = new RegExp(re.source, re.flags.indexOf('g') < 0 ? re.flags + 'g' : re.flags), out = [], m; while ((m = r.exec(this))){ out.push(m); if (m[0] === '') r.lastIndex++; } return out[Symbol.iterator](); };
+  if (!window.AbortController) window.AbortController = function(){ this.signal = undefined; this.abort = function(){}; };
+})();
+/* Cópia do arquivo como foi aberto, usada para gerar uma versão com DNS novas */
+const PRISTINE = '<!doctype html>\n' + document.documentElement.outerHTML;
+/* ===== Servidor MG PRO (Supabase): preencha com os dados do seu projeto ===== */
+const SB_URL = 'https://SEU-PROJETO.supabase.co';
+const SB_KEY = 'SUA-CHAVE-PUBLICA';
+/* ========================================================================== */
+const CLOUD = !/SEU-PROJETO|SUA-CHAVE/.test(SB_URL + SB_KEY);   // sem servidor configurado, o app funciona como antes (listas locais)
+
+const $ = s => document.querySelector(s);
+const store = {
+  get(k,d){ try{ const v = localStorage.getItem('mgpro:'+k); return v ? JSON.parse(v) : d; }catch{ return d; } },
+  set(k,v){ try{ localStorage.setItem('mgpro:'+k, JSON.stringify(v)); }catch{} }
+};
+/* Listas guardadas: dados pequenos no localStorage, conteúdo das listas no IndexedDB (aguenta listas grandes) */
+const idb = (() => {
+  let dbp;
+  const open = () => dbp ||= new Promise((res, rej) => {
+    const r = indexedDB.open('mgpro', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('lists');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction('lists', mode), q = fn(t.objectStore('lists'));
+    t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error);
+  }));
+  return {
+    get: k => tx('readonly', s => s.get(k)).catch(() => null),
+    set: (k, v) => tx('readwrite', s => s.put(v, k)).catch(() => null),
+    del: k => tx('readwrite', s => s.delete(k)).catch(() => null)
+  };
+})();
+let lists = store.get('lists', []);      // [{id, name, type:'xtream'|'url'|'file', url?, s?, u?, p?}]
+let activeId = store.get('active', null);
+const saveLists = () => { store.set('lists', lists); store.set('active', activeId); };
+function toast(t, ms = 2200){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, ms); }
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const b64 = s => { try{ return decodeURIComponent(escape(atob(s))); }catch{ return s || ''; } };
+const hhmm = d => d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+const DEMO = `#EXTM3U
+#EXTINF:-1 group-title="Exemplos",Big Buck Bunny (teste HLS)
+https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
+#EXTINF:-1 group-title="Exemplos",Apple Bipbop (teste HLS)
+https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8
+#EXTINF:-1 tvg-type="movie" group-title="Ficção",Tears of Steel (filme de teste)
+https://test-streams.mux.dev/tos_ismc/main.m3u8
+#EXTINF:-1 tvg-type="movie" group-title="Animação",Sintel (filme de teste)
+https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8`;
+
+/* Estado */
+let data = { live:[], movie:[], series:[] };   // itens: {name, logo, group, url, id?}
+let mode = 'live', cat = 'Todos', query = '';
+let current = null;           // item tocando
+let episodes = null;          // {title, seasons:{n:[eps]}} quando uma série está aberta
+let xt = store.get('xtream', null);
+let favs = new Set(store.get('favs', []));
+let hls = null, epgTimer = null;
+
+/* Leitura de M3U: separa TV, filmes e séries pelo endereço */
+function parseM3U(text){
+  const out = { live:[], movie:[], series:[], epgUrl:'' }; let meta = null;
+  for (const raw of text.split(/\r?\n/)){
+    const line = raw.trim(); if (!line) continue;
+    if (line.startsWith('#EXTM3U')){
+      out.epgUrl = ((line.match(/(?:url-tvg|x-tvg-url)="([^"]*)"/i)||[])[1] || '').split(',')[0].trim();
+      continue;
+    }
+    if (line.startsWith('#EXTINF')){
+      const attr = k => (line.match(new RegExp(k+'="([^"]*)"','i'))||[])[1] || '';
+      const c = line.lastIndexOf(',');
+      meta = { name:(c>-1?line.slice(c+1):'').trim() || attr('tvg-name') || 'Sem nome', logo:attr('tvg-logo'), group:attr('group-title') || 'Sem categoria', type:attr('tvg-type').toLowerCase(), tvgId:attr('tvg-id'), tvgName:attr('tvg-name') };
+    } else if (!line.startsWith('#')){
+      const it = { ...(meta || {name:line, logo:'', group:'Sem categoria'}), url:line };
+      const kind = it.type === 'series' || /\/series\//i.test(line) ? 'series' : it.type === 'movie' || /\/movie\//i.test(line) || /\.(mp4|mkv|avi)(\?|$)/i.test(line) ? 'movie' : 'live';
+      it.kind = kind === 'series' ? 'episode' : kind;
+      out[kind].push(it); meta = null;
+    }
+  }
+  out.series = groupSeries(out.series);
+  return out;
+}
+
+/* Junta episódios soltos da M3U em séries (ex.: "Nome S01E02" ou "Nome 1x02") */
+function groupSeries(eps){
+  const shows = new Map();
+  for (const e of eps){
+    const m = e.name.match(/^(.*?)[\s._\-|:]*S(\d{1,2})[\s._-]*E(\d{1,3})/i) || e.name.match(/^(.*?)[\s._\-|:]*(\d{1,2})x(\d{1,3})\b/i);
+    const title = ((m ? m[1] : e.name).replace(/[\s._\-|:]+$/,'').trim()) || e.name;
+    const season = m ? +m[2] : 1;
+    const key = title.toLowerCase() + '|' + e.group;
+    if (!shows.has(key)) shows.set(key, { kind:'show', name:title, logo:e.logo, group:e.group, url:'show:' + key, seasons:{} });
+    const sh = shows.get(key), list = (sh.seasons[season] ||= []);
+    list.push({ ...e, kind:'episode', season, ep: m ? +m[3] : list.length + 1, group:title });
+  }
+  for (const sh of shows.values()) for (const k in sh.seasons) sh.seasons[k].sort((a,b) => a.ep - b.ep);
+  return [...shows.values()];
+}
+const norm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
+/* Xtream Codes */
+let xtFormats = null;   // formatos que o servidor libera para este usuário (ex.: ["m3u8","ts"])
+const api = (action, extra='') => fetch(`${xt.s}/player_api.php?username=${encodeURIComponent(xt.u)}&password=${encodeURIComponent(xt.p)}&action=${action}${extra}`).then(r => { if(!r.ok) throw new Error(r.status); return r.json(); });
+const xurl = (type, id, ext) => `${xt.s}/${type}/${encodeURIComponent(xt.u)}/${encodeURIComponent(xt.p)}/${id}.${ext}`;
+
+async function loadXtream(){
+  for (let i = 0; ; i++){
+    try{ return await loadXtreamOnce(); }
+    catch(e){ if (i >= 2) throw e; await new Promise(r => setTimeout(r, 2500 * (i + 1))); }   // servidor instável: tenta mais 2 vezes
+  }
+}
+async function loadXtreamOnce(){
+  const [lc, ls, vc, vs, sc, ss, ui] = await Promise.all([
+    api('get_live_categories'), api('get_live_streams'),
+    api('get_vod_categories').catch(()=>[]), api('get_vod_streams').catch(()=>[]),
+    api('get_series_categories').catch(()=>[]), api('get_series').catch(()=>[]),
+    api('').catch(() => null)
+  ]);
+  if (!Array.isArray(ls)) throw new Error('login');
+  xtFormats = (ui && ui.user_info && ui.user_info.allowed_output_formats) || null;
+  const map = a => Object.fromEntries((a||[]).map(c => [c.category_id, c.category_name]));
+  const L = map(lc), V = map(vc), S = map(sc);
+  return {
+    live: ls.map(x => ({ kind:'live', id:x.stream_id, name:x.name, logo:x.stream_icon, group:L[x.category_id] || 'Sem categoria', url:xurl('live', x.stream_id, 'm3u8') })),
+    movie: (vs||[]).map(x => ({ kind:'movie', id:x.stream_id, name:x.name, logo:x.stream_icon, group:V[x.category_id] || 'Sem categoria', rating:x.rating, url:xurl('movie', x.stream_id, x.container_extension || 'mp4') })),
+    series: (ss||[]).map(x => ({ kind:'show', id:x.series_id, name:x.name, logo:x.cover, group:S[x.category_id] || 'Sem categoria', plot:x.plot, rating:x.rating, url:'series:'+x.series_id }))
+  };
+}
+
+/* Temporadas e episódios de uma série (do servidor Xtream, ou já agrupados da lista M3U) */
+async function loadSeries(show){
+  if (show._seasons) return show._seasons;
+  if (show.seasons){ show._seasons = show.seasons; return show._seasons; }
+  const seasons = {};
+  try{
+    const info = await api('get_series_info', '&series_id=' + show.id);
+    show._info = Object.assign({}, info.info || {});
+    for (const [n, eps] of Object.entries(info.episodes || {}))
+      seasons[n] = eps.map(e => ({ kind:'episode', name:e.title || `Episódio ${e.episode_num}`, ep:e.episode_num, season:n,
+        logo:(e.info && e.info.movie_image) || show.logo, group:show.name, plot:e.info && e.info.plot,
+        dur:e.info && (e.info.duration || ''), url:xurl('series', e.id, e.container_extension || 'mp4') }));
+  }catch(e){}
+  show._seasons = seasons;
+  return seasons;
+}
+async function openShow(show){ showDetails(show); }
+
+/* ===== Logos dos canais ===== */
+const LOGO_INDEX_URL = 'https://raw.githubusercontent.com/mgmrv/mgpro-download/main/logos.json';
+const LOGO_NOISE = new Set('hd fhd uhd sd 4k 8k hevc h264 h265 fullhd hdr 60fps fps 1080p 720p 2160p 1080 720 alt alternativo backup bkp vip ppv legendado leg dublado dub'.split(' '));
+const LOGO_REGION = new Set('sp rj mg rs pr ba pe df ce sc go es am pa mt ms pb rn al se pi ma to ro ac ap rr sao paulo rio janeiro minas bahia nordeste sul norte capital interior brasil br internacional'.split(' '));
+let logoIdx = null;
+/* Mesma regra do índice (tools/build-logos.py): sem acento, sem "BR:", sem HD/FHD/4K, só letras e números */
+function logoTokens(name){
+  let s = String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  s = s.replace(/^\s*[\[(|]?\s*[a-z]{2,3}\s*[\])|:]\s*/, '').replace(/\(.*?\)|\[.*?\]/g, ' ').replace(/&/g, ' e ').replace(/\+/g, ' plus ');
+  return (s.match(/[a-z0-9]+/g) || []).filter(t => !LOGO_NOISE.has(t));
+}
+function logoFor(name){
+  if (!logoIdx) return '';
+  const t = logoTokens(name);
+  return logoIdx[t.join('')] || logoIdx[t.filter(x => !LOGO_REGION.has(x)).join('')] || '';
+}
+function initials(name){
+  const t = logoTokens(name).filter(x => !/^\d+$/.test(x));
+  const w = String(name || '').replace(/^\s*[\[(|]?\s*[A-Za-z]{2,3}\s*[\])|:]\s*/, '').trim().split(/\s+/).filter(Boolean);
+  return (w.length > 1 ? w.slice(0, 3).map(x => x[0]).join('') : (w[0] || '').slice(0, 3)).toUpperCase() || (t[0] || '').slice(0, 3).toUpperCase();
+}
+window.logoErr = img => {
+  const fb = img.getAttribute('data-fb');
+  if (fb){ img.removeAttribute('data-fb'); img.src = fb; return; }
+  const box = img.parentNode, row = img.closest('.ch'); img.remove();
+  if (box && row){ box.classList.remove('has-img'); box.textContent = initials(row.querySelector('.name')?.firstChild?.textContent || ''); }
+};
+/* Baixa o índice uma vez e guarda; renova a cada 7 dias */
+async function loadLogoIndex(){
+  let fresh = false;
+  try{
+    const cached = await idb.get('logos:index');
+    if (cached && cached.data){ logoIdx = cached.data; fresh = Date.now() - cached.ts < 7 * 864e5; }
+  }catch(e){}
+  const hadIdx = !!logoIdx;
+  if (hadIdx) renderList();
+  if (fresh) return;
+  try{
+    const r = await fetch(LOGO_INDEX_URL, { cache:'no-cache' });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data && typeof data === 'object'){ logoIdx = data; idb.set('logos:index', { ts:Date.now(), data }); if (!hadIdx) renderList(); }
+  }catch(e){}
+}
+setTimeout(loadLogoIndex, 300);
+
+/* Visualização */
+function items(){
+  if (episodes) return Object.values(episodes.seasons).flat();
+  return data[mode].filter(c =>
+    cat === 'Todos' || (cat === '★ Favoritos' ? favs.has(c.url) : c.group === cat));
+}
+
+function render(){
+  $('#cLive').textContent = data.live.length;
+  $('#cMovie').textContent = data.movie.length;
+  $('#cSeries').textContent = data.series.length;
+  document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  const counts = {};
+  data[mode].forEach((c, i) => { c.n = i + 1; counts[c.group] = (counts[c.group]||0)+1; });   // número fixo de cada canal
+  const favN = data[mode].filter(c => favs.has(c.url)).length;
+  $('#cats').innerHTML = '<div class="label">Categorias</div>' +
+    [['Todos', data[mode].length], ['★ Favoritos', favN], ...Object.entries(counts)].map(([g,n]) =>
+      `<button class="cat ${g===cat?'on':''}" data-cat="${esc(g)}"><span>${esc(g)}</span><span>${n}</span></button>`).join('');
+  const vod = mode !== 'live' && !(current && current.kind === 'live' && document.body.classList.contains('full'));
+  document.body.classList.toggle('detailsmode', vod);
+  if (vod){
+    const want = mode === 'series' ? 'show' : 'movie';
+    showDetails(detailsItem && detailsItem.kind === want ? detailsItem : null);   // painel da aba certa
+  } else $('#details').hidden = true;
+  renderList();
+}
+
+function row(c, i, numLabel){
+  const poster = c.kind !== 'live';
+  /* Logo: primeiro o do servidor; se não tiver (ou o link falhar), o da base pública pelo nome do canal */
+  const fb = c.kind === 'live' ? logoFor(c.name) : '';
+  const src = c.logo || fb, alt = c.logo && fb && fb !== c.logo ? fb : '';
+  const logo = src ? `<img src="${esc(src)}" alt="" loading="lazy" decoding="async"${alt ? ` data-fb="${esc(alt)}"` : ''} onerror="logoErr(this)">` : esc(initials(c.name));
+  const nSeasons = c.seasons ? Object.keys(c.seasons).length : 0;
+  const sub = c.kind === 'episode' && episodes ? `Temporada ${c.season} · Ep. ${c.ep}`
+    : c.kind === 'show' ? `${esc(c.group)} · <em>${nSeasons ? nSeasons + (nSeasons > 1 ? ' temporadas' : ' temporada') : 'Série'} ›</em>`
+    : c.rating ? `${esc(c.group)} · ★ ${esc(c.rating)}` : esc(c.group);
+  const fav = c.kind === 'episode' ? '<span></span>' : `<button class="fav ${favs.has(c.url)?'on':''}" data-fav="${i}" aria-label="Favoritar">★</button>`;
+  return `<div class="ch ${poster?'poster':''} ${current && current.url===c.url?'on':''}" data-i="${i}" tabindex="0">
+    <span class="num">${numLabel}</span><span class="logo${src && c.kind === 'live' ? ' has-img' : ''}">${logo}</span>
+    <span class="name">${esc(c.name)}<span class="sub">${sub}</span></span>${fav}</div>`;
+}
+
+const CATALOG_MAX = 300;
+function card(c, i){
+  const img = c.logo ? `<img src="${esc(c.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : '';
+  return `<div class="ch card ${favs.has(c.url) ? 'fav-on' : ''}" data-i="${i}" tabindex="0">
+    <span class="poster"><b>${esc(initials(c.name))}</b>${img}</span>
+    <span class="t">${esc(c.name)}</span>${c.rating && +c.rating ? `<span class="r">★ ${esc(String(c.rating).slice(0, 3))}</span>` : ''}</div>`;
+}
+const LIST_MAX = 400, SEARCH_MAX = 60;
+let shown = [];   // itens visíveis na lista, na ordem em que aparecem
+function renderList(){
+  const L = $('#list'); shown = [];
+  const add = (c, label) => { shown.push(c); return row(c, shown.length - 1, label); };
+  const add2 = c => { shown.push(c); return shown.length - 1; };
+  if (episodes){
+    let html = `<button class="back" id="back">← ${esc(episodes.show.name)}</button>`;
+    const seasons = Object.entries(episodes.seasons).sort((a,b) => a[0] - b[0]);
+    if (!seasons.length) html += '<div class="empty">Nenhum episódio encontrado para esta série.</div>';
+    for (const [n, eps] of seasons){
+      html += `<div class="season">Temporada ${esc(n)} · ${eps.length} episódios</div>`;
+      html += eps.map(e => add(e, 'E' + String(e.ep).padStart(2,'0'))).join('');
+    }
+    L.innerHTML = html; return;
+  }
+  if (!data.live.length && !data.movie.length && !data.series.length){
+    L.innerHTML = LOCKED()
+      ? `<div class="empty">Nenhuma lista liberada para você ainda.<br>Fale com seu fornecedor.<br><br><button class="btn" data-open>Minha conta</button></div>`
+      : `<div class="empty">Nenhuma lista carregada.<br><br><button class="btn primary" data-open>Adicionar lista</button></div>`; return;
+  }
+  /* Busca: procura em TV, Filmes e Séries ao mesmo tempo; cada série aparece uma vez */
+  const q = norm(query.trim());
+  if (q){
+    const order = [mode, ...['live','movie','series'].filter(m => m !== mode)];
+    const label = { live:'TV ao vivo', movie:'Filmes', series:'Séries' };
+    let html = '', total = 0;
+    for (const m of order){
+      const hits = data[m].filter(c => norm(c.name).includes(q));
+      if (!hits.length) continue;
+      total += hits.length;
+      html += `<div class="season">${label[m]} · ${hits.length}</div>` +
+        hits.slice(0, SEARCH_MAX).map((c,i) => add(c, String(i+1).padStart(3,'0'))).join('') +
+        (hits.length > SEARCH_MAX ? `<div class="more">Mais ${hits.length - SEARCH_MAX} resultados em ${label[m]}. Digite mais letras para afinar a busca.</div>` : '');
+    }
+    L.innerHTML = total ? html : `<div class="empty">Nada encontrado para “${esc(query.trim())}”.</div>`; return;
+  }
+  const hint = `<div class="cathint"><span>◀</span> ${esc(cat === '★ Favoritos' ? 'Favoritos' : cat)} <small>· categorias</small></div>`;
+  const vis = items();
+  if (!vis.length){ L.innerHTML = `<div class="empty">${data[mode].length ? 'Nada nesta categoria.' : 'Sua lista não tem itens nesta aba.'}</div>`; return; }
+  if (mode !== 'live'){            // Filmes e Séries: catálogo de capas
+    L.innerHTML = '<div class="grid">' + vis.slice(0, CATALOG_MAX).map(c => card(c, add2(c))).join('') + '</div>' +
+      (vis.length > CATALOG_MAX ? `<div class="empty">Mostrando ${CATALOG_MAX} de ${vis.length}. Use a busca ou as categorias para achar o resto.</div>` : '');
+    return;
+  }
+  L.innerHTML = hint + vis.slice(0, LIST_MAX).map((c,i) => add(c, String(c.n || i+1).padStart(3,'0'))).join('') +
+    (vis.length > LIST_MAX ? `<div class="empty">Mostrando ${LIST_MAX} de ${vis.length}. Use a busca ou as categorias para achar o resto.</div>` : '');
+}
+
+/* Reprodução */
+function play(c){
+  if (!c) return;
+  if (c.kind === 'show'){ showDetails(c); return; }
+  if (c.kind === 'live') document.body.classList.remove('detailsmode');
+  current = c; store.set('last', c.url); document.body.classList.add('playing');
+  const v = $('#v'), msg = $('#msg');
+  msg.hidden = false; msg.textContent = 'Carregando…';
+  $('#nowName').textContent = c.name;
+  $('#nowSub').textContent = c.kind === 'live' ? `TV ao vivo · ${c.group}` :
+    c.kind === 'movie' ? `Filme · ${c.group}${c.rating ? ' · ★ ' + c.rating : ''}` :
+    `${c.group} · Temporada ${c.season ?? '?'} · Episódio ${c.ep ?? '?'}`;
+  const plot = c.plot || (episodes && episodes.show.plot) || '';
+  $('#nowPlot').hidden = !plot || c.kind === 'live'; $('#nowPlot').textContent = plot;
+  $('#osd').hidden = false;
+  $('#osdTag').textContent = c.kind === 'live' ? 'AO VIVO' : c.kind === 'movie' ? 'FILME' : 'SÉRIE';
+  $('#osdTag').className = 'pill' + (c.kind === 'live' ? ' live' : '');
+  $('#osdNum').textContent = c.kind === 'live' ? c.name.slice(0,24) : '';
+  cleanupPlayers();
+  if (NATIVE){                       // app Android: player nativo, desenhado por baixo da tela
+    try{ v.load(); }catch(e){}
+    nativeTry = { c, ts: false, url: c.url, retries: 0 };
+    let u = c.url;
+    if (c.kind === 'live' && /\/live\/.*\.m3u8$/i.test(u) && (!xtFormats || xtFormats.indexOf('ts') >= 0)){ u = u.replace(/\.m3u8$/i, '.ts'); nativeTry.ts = true; }
+    nativeTry.url = u;
+    nativeRect();
+    try{ MGNative.play(u); }catch(e){}
+    loadEpg(c); markCurrent(c);
+    return;
+  }
+  /* Navegador: tenta vários jeitos em sequência antes de desistir (HLS → .ts → vídeo direto) */
+  const tok = ++playToken, cands = playCandidates(c, v);
+  let k = -1, watchdog = null;
+  const next = () => {
+    if (tok !== playToken) return;
+    clearTimeout(watchdog); cleanupPlayers();
+    k++;
+    if (k >= cands.length) return playFailed(c);
+    const cd = cands[k];
+    msg.hidden = false; msg.textContent = k === 0 ? 'Carregando…' : 'Tentando outro formato…';
+    watchdog = setTimeout(() => { if (tok === playToken && v.readyState < 2) next(); }, 20000);   // não começou em 20 s
+    if (cd.type === 'hls') startHls(cd.url, v, next, tok);
+    else if (cd.type === 'ts') startTs(cd.url, c, v, next, tok);
+    else startDirect(cd.url, v, next, tok);
+  };
+  v.onplaying = () => { if (tok === playToken){ clearTimeout(watchdog); msg.hidden = true; c._retry = 0; } };
+  next();
+  loadEpg(c);
+  markCurrent(c);
+}
+
+/* ===== Reprodução no navegador (computador, LG e Samsung) ===== */
+let playToken = 0, tsPlayer = null;
+const MPEGTS_URL = 'https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js';
+function loadScriptOnce(src){
+  loadScriptOnce.p = loadScriptOnce.p || {};
+  return loadScriptOnce.p[src] = loadScriptOnce.p[src] || new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => { delete loadScriptOnce.p[src]; rej(); };
+    document.head.appendChild(s);
+  });
+}
+function playCandidates(c, v){
+  const u = c.url, out = [];
+  const m3u8 = /\.m3u8(\?|$)/i.test(u), ts = /\.ts(\?|$)/i.test(u), file = /\.(mp4|m4v|webm|mkv|avi|mov)(\?|$)/i.test(u);
+  const tvHls = TV_OS && !!v.canPlayType('application/vnd.apple.mpegurl');   // LG e Samsung tocam HLS sozinhas
+  const xtLive = /\/live\//i.test(u);
+  if (file) out.push({ type:'direct', url:u });
+  else if (m3u8){
+    if (tvHls) out.push({ type:'direct', url:u });
+    out.push({ type:'hls', url:u });
+    if (xtLive) out.push({ type:'ts', url:u.replace(/\.m3u8(\?|$)/i, '.ts$1') });
+  } else if (ts){
+    out.push({ type:'ts', url:u });
+    if (xtLive) out.push({ type:'hls', url:u.replace(/\.ts(\?|$)/i, '.m3u8$1') });
+  } else out.push({ type:'hls', url:u }, { type:'ts', url:u }, { type:'direct', url:u });   // lista M3U sem extensão
+  return out;
+}
+function cleanupPlayers(){
+  const v = $('#v');
+  if (hls){ try{ hls.destroy(); }catch(e){} hls = null; }
+  if (tsPlayer){ try{ tsPlayer.pause(); tsPlayer.unload(); tsPlayer.detachMediaElement(); tsPlayer.destroy(); }catch(e){} tsPlayer = null; }
+  v.onerror = null;
+  try{ v.removeAttribute('src'); v.load(); }catch(e){}
+}
+function startHls(url, v, next, tok){
+  if (!(window.Hls && Hls.isSupported())) return next();
+  hls = new Hls({ enableWorker:true, abrEwmaDefaultEstimate:10000000, capLevelToPlayerSize:false, maxBufferLength:30, backBufferLength:30 });   // começa na melhor qualidade
+  let fixes = 0;
+  hls.on(Hls.Events.ERROR, (e, d) => {
+    if (!d.fatal || tok !== playToken) return;
+    if (d.type === Hls.ErrorTypes.MEDIA_ERROR && fixes < 2){ fixes++; hls.recoverMediaError(); return; }   // falha momentânea: tenta se recuperar
+    next();
+  });
+  hls.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(() => {}));
+  hls.loadSource(url); hls.attachMedia(v);
+}
+function startTs(url, c, v, next, tok){
+  loadScriptOnce(MPEGTS_URL).then(() => {
+    if (tok !== playToken) return;
+    if (!window.mpegts || !mpegts.getFeatureList().mseLivePlayback) return next();
+    tsPlayer = mpegts.createPlayer({ type:'mpegts', isLive:c.kind === 'live', url }, { enableWorker:true, liveBufferLatencyChasing:true, autoCleanupSourceBuffer:true });
+    tsPlayer.on(mpegts.Events.ERROR, () => { if (tok === playToken) next(); });
+    tsPlayer.attachMediaElement(v); tsPlayer.load();
+    const pr = tsPlayer.play(); if (pr && pr.catch) pr.catch(() => {});
+  }).catch(() => { if (tok === playToken) next(); });
+}
+function startDirect(url, v, next, tok){
+  v.onerror = () => { if (tok === playToken) next(); };
+  v.src = url; v.play().catch(() => {});
+}
+function playFailed(c){
+  const msg = $('#msg'), mkv = /\.(mkv|avi)(\?|$)/i.test(c.url);
+  if (c.kind === 'live' && (c._retry || 0) < 3){       // ao vivo: tenta reconectar sozinho antes de mostrar o erro
+    c._retry = (c._retry || 0) + 1;
+    msg.hidden = false; msg.textContent = 'Reconectando…';
+    const tok = playToken; setTimeout(() => { if (current === c && tok === playToken) play(c); }, 4000);
+    return;
+  }
+  c._retry = 0;
+  if (!c._failedOver){                                   // não voltou: procura outra DNS antes de desistir
+    c._failedOver = true;
+    failoverDns(c).then(ok => { if (!ok && current === c){ c._retry = 9; playFailed(c); c._retry = 0; } c._failedOver = false; });
+    return;
+  }
+  msg.hidden = false;
+  msg.innerHTML = `<div class="fail"><b>Não deu para tocar no navegador.</b>
+    <span>${mkv ? 'Este título está em .mkv/.avi e o áudio ou vídeo dele não é aceito pelo navegador.' : 'O conteúdo pode estar fora do ar agora, ou o servidor bloqueia o navegador.'} No app (APK) e no VLC ele costuma tocar.</span>
+    <span class="row"><button class="btn" type="button" data-retry>Tentar de novo</button><button class="btn" type="button" data-copy>Copiar link para o VLC</button></span></div>`;
+}
+$('#msg').addEventListener('click', async e => {
+  if (e.target.closest('[data-retry]') && current) play(current);
+  if (e.target.closest('[data-copy]') && current){
+    const t = current.url;
+    try{ await navigator.clipboard.writeText(t); toast('Link copiado. No VLC: Mídia → Abrir fluxo de rede → colar.', 5000); }
+    catch(err){ const ta = document.createElement('textarea'); ta.value = t; document.body.append(ta); ta.select(); try{ document.execCommand('copy'); toast('Link copiado. No VLC: Mídia → Abrir fluxo de rede → colar.', 5000); }catch(x){ toast('Não consegui copiar o link.'); } ta.remove(); }
+  }
+});
+/* Marca o canal tocando sem redesenhar a lista inteira (mais leve na TV) */
+function markCurrent(c){
+  document.querySelectorAll('#list .ch.on').forEach(r => r.classList.remove('on'));
+  const i = shown.findIndex(x => x.url === c.url);
+  const row = i >= 0 ? document.querySelector(`#list .ch[data-i="${i}"]`) : null;
+  if (row){ row.classList.add('on'); try{ row.scrollIntoView({ block:'nearest' }); }catch(e){} }
+}
+
+/* ===== Painel do título (filmes e séries) ===== */
+let detailsItem = null, detailsSeason = null;
+async function vodInfo(c){
+  if (c._info) return c._info;
+  if (!xt || !c.id){ c._info = {}; return c._info; }
+  try{ const r = await api('get_vod_info', '&vod_id=' + c.id); c._info = (r && r.info) || {}; }catch(e){ c._info = {}; }
+  return c._info;
+}
+function fmtDur(info){
+  const s = +info.duration_secs || 0;
+  if (s) return s >= 3600 ? `${Math.floor(s / 3600)}h ${String(Math.round(s % 3600 / 60)).padStart(2, '0')}min` : `${Math.round(s / 60)} min`;
+  return info.duration || '';
+}
+function showDetails(c){
+  const box = $('#details');
+  if (c !== detailsItem) detailsSeason = null;   // série nova começa pela lista de temporadas
+  detailsItem = c;
+  document.body.classList.add('detailsmode');
+  box.hidden = false;
+  if (!c){
+    box.innerHTML = `<div class="d-empty">${mode === 'series' ? 'Escolha uma série' : 'Escolha um filme'} no catálogo ao lado</div>`;
+    return;
+  }
+  const series = c.kind === 'show';
+  const draw = (info) => {
+    if (detailsItem !== c) return;
+    info = info || {};
+    const back = (info.backdrop_path && info.backdrop_path[0]) || info.cover_big || info.movie_image || c.logo || '';
+    const poster = info.cover_big || info.movie_image || info.cover || c.logo || '';
+    const year = String(info.releasedate || info.releaseDate || info.release_date || '').slice(0, 4);
+    const meta = [year, info.genre, fmtDur(info), (info.rating || c.rating) && +(info.rating || c.rating) ? '★ ' + String(info.rating || c.rating).slice(0, 3) : ''].filter(Boolean).map(esc).join(' · ');
+    const plot = info.plot || info.description || c.plot || (series ? '' : '');
+    const cast = info.cast || info.actors || '';
+    box.innerHTML = `
+      <div class="d-hero">
+        ${back ? `<img class="d-bg" src="${esc(back)}" alt="" onerror="this.remove()">` : ''}
+        <div class="d-shade"></div>
+        <div class="d-top">
+          <span class="d-poster"><b>${esc(initials(c.name))}</b>${poster ? `<img src="${esc(poster)}" alt="" onerror="this.remove()">` : ''}</span>
+          <div class="d-head"><span class="pill">${series ? 'SÉRIE' : 'FILME'}</span><h2>${esc(c.name)}</h2>${meta ? `<p class="d-meta">${meta}</p>` : ''}</div>
+        </div>
+      </div>
+      <p class="d-plot">${plot ? esc(plot) : '<span class="muted">Sinopse não informada pelo servidor.</span>'}</p>
+      ${cast ? `<p class="d-cast"><b>Elenco:</b> ${esc(String(cast).slice(0, 160))}</p>` : ''}
+      <div class="d-actions">
+        <button class="btn primary" id="dPlay" type="button">▶ ${series ? 'Assistir' : 'Reproduzir'}</button>
+        <button class="btn" id="dFav" type="button">${favs.has(c.url) ? '★ Nos favoritos' : '☆ Favoritar'}</button>
+      </div>
+      ${series ? '<div class="d-eps" id="dEps"><p class="muted">Carregando episódios…</p></div>' : ''}`;
+    if (series) drawEpisodes(c);
+  };
+  draw(c._info);
+  if (series){ loadSeries(c).then(() => { if (detailsItem === c && !c._drawnInfo){ c._drawnInfo = true; draw(c._info); } else drawEpisodes(c); }); }
+  else if (!c._info) vodInfo(c).then(draw);
+}
+function drawEpisodes(show){
+  const el = $('#dEps'); if (!el || detailsItem !== show || !show._seasons) return;
+  const seasons = Object.keys(show._seasons).sort((a, b) => a - b);
+  if (!seasons.length){ el.innerHTML = '<p class="muted">Nenhum episódio encontrado para esta série.</p>'; return; }
+  if (detailsSeason !== null && !seasons.includes(String(detailsSeason))) detailsSeason = null;
+  if (detailsSeason === null){        // lista de temporadas
+    el.innerHTML = `<p class="d-sub">Temporadas</p><div class="d-eplist">${seasons.map(n => {
+      const k = (show._seasons[n] || []).length;
+      return `<button class="d-ep d-season" type="button" data-season="${esc(n)}"><span class="n">T${String(n).padStart(2, '0')}</span><span class="t">Temporada ${esc(n)}</span><span class="d">${k} episódio${k === 1 ? '' : 's'} ›</span></button>`;
+    }).join('')}</div>`;
+    return;
+  }
+  const eps = show._seasons[detailsSeason] || [];
+  el.innerHTML = `<div class="d-sub"><button class="chip" type="button" data-seasons-back>◀ Temporadas</button><span>Temporada ${esc(detailsSeason)} · ${eps.length} episódio${eps.length === 1 ? '' : 's'}</span></div>
+    <div class="d-eplist">${eps.map((e, i) => `<button class="d-ep" type="button" data-ep="${i}"><span class="n">E${String(e.ep).padStart(2, '0')}</span><span class="t">${esc(e.name)}</span>${e.dur ? `<span class="d">${esc(e.dur)}</span>` : ''}</button>`).join('')}</div>`;
+}
+function seasonsBack(){
+  const was = detailsSeason; detailsSeason = null; drawEpisodes(detailsItem);
+  const b = was !== null && [...document.querySelectorAll('#dEps [data-season]')].find(x => x.dataset.season === String(was));
+  if (b) b.focus();
+}
+function playVod(c){
+  if (!c) return;
+  play(c);
+  setFull(true);
+}
+$('#details').addEventListener('click', async e => {
+  const c = detailsItem; if (!c) return;
+  if (e.target.closest('#dPlay')){
+    if (c.kind === 'show'){ const s = await loadSeries(c); const k = Object.keys(s).sort((a, b) => a - b)[0]; const ep = k && s[k][0]; if (ep){ episodes = { show:c, seasons:s }; playVod(ep); } else toast('Nenhum episódio encontrado'); }
+    else playVod(c);
+    return;
+  }
+  if (e.target.closest('#dFav')){ toggleFav(c); showDetails(c); const b = $('#dFav'); if (b) b.focus(); return; }
+  const sb = e.target.closest('[data-season]');
+  if (sb){ detailsSeason = sb.dataset.season; drawEpisodes(c); const n = $('#dEps [data-ep]'); if (n) n.focus(); return; }
+  if (e.target.closest('[data-seasons-back]')){ seasonsBack(); return; }
+  const eb = e.target.closest('[data-ep]');
+  if (eb && c._seasons){ episodes = { show:c, seasons:c._seasons }; playVod((c._seasons[detailsSeason] || [])[+eb.dataset.ep]); }
+});
+
+/* ===== Player nativo do app Android (window.MGNative) ===== */
+const NATIVE = (() => { try{ return !!(window.MGNative && MGNative.available()); }catch(e){ return false; } })();
+let nativeTry = null;
+if (NATIVE) document.documentElement.classList.add('native');
+function nativeRect(){
+  if (!NATIVE) return;
+  const r = $('.screen').getBoundingClientRect();
+  try{ MGNative.setRect(r.left + 1, r.top + 1, Math.max(1, r.width - 2), Math.max(1, r.height - 2), window.innerWidth); }catch(e){}
+}
+window.mgNativeEvent = ev => {
+  const msg = $('#msg');
+  if (ev === 'playing'){ msg.hidden = true; if (nativeTry){ nativeTry.retries = 0; nativeTry.played = true; } return; }
+  /* Canal ao vivo caiu ou terminou sozinho: reconecta (até 5 vezes seguidas) */
+  const t = nativeTry;
+  if ((ev === 'ended' || ev === 'error') && t && current === t.c && t.retries < (t.c.kind === 'live' ? 5 : 2) && !(ev === 'error' && t.ts && t.retries === 0 && !t.played)){
+    t.retries++;
+    msg.hidden = false; msg.textContent = 'Reconectando…';
+    setTimeout(() => { if (current === t.c && nativeTry === t){ try{ MGNative.play(t.url); }catch(e){} } }, 1500 * t.retries);
+    return;
+  }
+  else if (ev === 'buffering'){ if (msg.hidden && current) { /* mantém a imagem; só recarrega */ } }
+  else if (ev === 'error'){
+    if (nativeTry && nativeTry.ts && current === nativeTry.c){   // .ts não funcionou: tenta o formato HLS
+      nativeTry.ts = false; nativeTry.url = nativeTry.c.url; nativeTry.retries = 0;
+      try{ MGNative.play(nativeTry.c.url); }catch(e){}
+      return;
+    }
+    if (nativeTry && current === nativeTry.c && !nativeTry.c._failedOver){   // não voltou: procura outra DNS
+      nativeTry.c._failedOver = true;
+      const c = nativeTry.c;
+      failoverDns(c).then(ok => { c._failedOver = false; if (!ok && current === c){ msg.hidden = false; msg.textContent = 'Não foi possível abrir. O canal pode estar fora do ar.'; } });
+      return;
+    }
+    msg.hidden = false; msg.textContent = 'Não foi possível abrir. O canal pode estar fora do ar.';
+  }
+};
+if (NATIVE){
+  try{ new ResizeObserver(() => nativeRect()).observe($('.screen')); }catch(e){}
+  window.addEventListener('resize', nativeRect);
+  document.addEventListener('scroll', () => nativeRect(), true);
+}
+function mediaToggle(){
+  if (NATIVE){ try{ MGNative.toggle(); }catch(e){} return; }
+  const v = $('#v'); v.paused ? v.play().catch(() => {}) : v.pause();
+}
+
+/* Leitor de EPG XMLTV (para listas M3U) */
+let epgData = null;   // { byId:{id:[[ini,fim,titulo,desc]]}, names:{nome:id} }
+const xmlUn = t => t.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,'$1').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(n)).replace(/&amp;/g,'&').trim();
+function xmltvTime(t){
+  const m = String(t).match(/(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)?\s*([+-]\d{4})?/); if (!m) return 0;
+  let ms = Date.UTC(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +(m[6]||0));
+  if (m[7]){ const sg = m[7][0] === '-' ? -1 : 1; ms -= sg * (+m[7].slice(1,3)*60 + +m[7].slice(3,5)) * 60000; }
+  return ms;
+}
+async function bytesToText(buf){
+  const u = new Uint8Array(buf);
+  if (u[0] === 0x1f && u[1] === 0x8b && 'DecompressionStream' in window){
+    const st = new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return await new Response(st).text();
+  }
+  return new TextDecoder().decode(u);
+}
+function parseXMLTV(xml){
+  const names = {}, byId = {}, now = Date.now(), from = now - 3*3600e3, to = now + 36*3600e3;
+  for (const m of xml.matchAll(/<channel\b[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/channel>/g))
+    for (const d of m[2].matchAll(/<display-name[^>]*>([\s\S]*?)<\/display-name>/g)) names[norm(xmlUn(d[1]))] ??= m[1];
+  for (const m of xml.matchAll(/<programme\b([^>]*)>([\s\S]*?)<\/programme>/g)){
+    const at = k => (m[1].match(new RegExp(k + '="([^"]*)"')) || [])[1] || '';
+    const ini = xmltvTime(at('start')), fim = xmltvTime(at('stop')) || ini + 3600e3;
+    if (fim < from || ini > to) continue;
+    const title = xmlUn((m[2].match(/<title[^>]*>([\s\S]*?)<\/title>/) || [])[1] || 'Sem título');
+    const desc = xmlUn((m[2].match(/<desc[^>]*>([\s\S]*?)<\/desc>/) || [])[1] || '').slice(0, 220);
+    (byId[at('channel')] ||= []).push([ini, fim, title, desc]);
+  }
+  for (const k in byId) byId[k].sort((a,b) => a[0] - b[0]);
+  return { byId, names, count:Object.keys(byId).length, ts:now };
+}
+/* Carrega o guia de uma lista: usa a cópia guardada se tiver menos de 12 h, senão baixa de novo */
+async function loadListEpg(l, headerUrl){
+  epgData = null;
+  const key = 'epg:' + l.id;
+  const cached = await idb.get(key);
+  const src = l.epg || headerUrl;
+  const fresh = cached && (l.epg === 'file' || ((!cached.src || cached.src === src) && Date.now() - cached.ts < 12*3600e3));
+  if (fresh){ epgData = cached; refreshEpg(); }
+  if (fresh || !src || src === 'file') return;
+  try{
+    const r = await fetch(src); if (!r.ok) throw 0;
+    const d = parseXMLTV(await bytesToText(await r.arrayBuffer()));
+    if (!d.count) throw 0;
+    if (activeId !== l.id) return;
+    d.src = src; epgData = d; idb.set(key, d); refreshEpg();
+    toast(`Guia carregado: ${d.count} canais`);
+  } catch { if (cached){ epgData = cached; refreshEpg(); } }
+}
+function refreshEpg(){ if (current && current.kind === 'live') loadEpg(current); }
+function epgFor(c){
+  if (!epgData) return null;
+  const id = (c.tvgId && epgData.byId[c.tvgId] ? c.tvgId : null) || epgData.names[norm(c.tvgId)] || epgData.names[norm(c.tvgName)] || epgData.names[norm(c.name)];
+  const list = id && epgData.byId[id];
+  if (!list) return [];
+  const now = Date.now(), i = Math.max(0, list.findIndex(p => p[1] > now));
+  return list.slice(i, i + 6).map(p => ({ start:new Date(p[0]), end:new Date(p[1]), title:p[2], desc:p[3] }));
+}
+function drawEpg(box, c, list){
+  const more = $('#epgMore');
+  if (!list.length){ more.hidden = true; box.innerHTML = '<h4>Guia de programação</h4><div class="prog empty"><time>—</time><span>Sem programação disponível para este canal.</span></div>'; return; }
+  const draw = () => {
+    if (current !== c) return clearInterval(epgTimer);
+    const now = Date.now();
+    box.innerHTML = '<h4>Guia de programação</h4>' + list.map(p => {
+      const on = now >= p.start && now < p.end;
+      const pct = on ? Math.round((now - p.start) / (p.end - p.start) * 100) : 0;
+      return `<div class="prog ${on?'on':''}"><time>${hhmm(p.start)} – ${hhmm(p.end)}</time><div>
+        <strong>${esc(p.title)}${on?' · agora':''}</strong>${p.desc?`<small>${esc(p.desc.slice(0,160))}</small>`:''}
+        ${on?`<div class="bar"><i style="width:${pct}%"></i></div>`:''}</div></div>`;
+    }).join('');
+    /* Resumo (TV): sinopse do que está passando e os horários seguintes */
+    const atual = list.find(p => now >= p.start && now < p.end) || list[0];
+    const depois = list.filter(p => +p.start > now).slice(1, 4);   // depois do "A seguir"
+    more.innerHTML = `<div class="em-now"><span class="em-tag">AGORA</span><b>${esc(atual.title)}</b>
+        ${atual.desc ? `<p>${esc(atual.desc)}</p>` : '<p class="muted">Sem resumo informado para este programa.</p>'}</div>` +
+      (depois.length ? `<ul class="em-next">${depois.map(p => `<li><time>${hhmm(p.start)}</time><span>${esc(p.title)}</span></li>`).join('')}</ul>` : '');
+    more.hidden = false;
+  };
+  draw(); epgTimer = setInterval(draw, 30000);
+}
+
+/* Guia de programação */
+/* Busca o guia no servidor Xtream: primeiro a consulta resumida; se vier vazia, a completa */
+function epgTime(p, key, tsKey){
+  if (+p[tsKey]) return new Date(+p[tsKey] * 1000);
+  const t = String(p[key] || '').replace(' ', 'T');
+  const d = new Date(t); return isNaN(+d) ? null : d;
+}
+async function fetchXtEpg(c){
+  const map = r => (r && r.epg_listings || []).map(p => ({
+      title:b64(p.title), desc:b64(p.description),
+      start:epgTime(p, 'start', 'start_timestamp'), end:epgTime(p, 'end', 'stop_timestamp')
+    }))
+    .filter(p => p.start && p.end && +p.end > Date.now())      // tira o que já terminou
+    .sort((a, b) => a.start - b.start);
+  let list = [];
+  try{ list = map(await api('get_short_epg', `&stream_id=${c.id}&limit=10`)); }catch(e){}
+  if (!list.length){ try{ list = map(await api('get_simple_data_table', `&stream_id=${c.id}`)); }catch(e){} }
+  return list.slice(0, 6);
+}
+async function loadEpg(c){
+  clearInterval(epgTimer);
+  const box = $('#epg');
+  $('#epgMore').hidden = true;
+  if (c.kind !== 'live'){ box.hidden = true; return; }
+  if (!xt){
+    const list = epgFor(c);
+    if (!list){ box.hidden = true; return; }
+    box.hidden = false; drawEpg(box, c, list); return;
+  }
+  if (!c.id){ box.hidden = true; return; }
+  box.hidden = false; box.innerHTML = '<h4>Guia de programação</h4><div class="prog empty"><time>—</time><span>Carregando o guia…</span></div>';
+  const list = await fetchXtEpg(c);
+  if (current !== c) return;
+  drawEpg(box, c, list);
+}
+
+function step(d){
+  const vis = shown.filter(c => c.kind !== 'show'); if (!vis.length) return;
+  let pos = vis.findIndex(c => current && c.url === current.url);
+  play(vis[(pos + d + vis.length) % vis.length]);
+}
+function toggleFav(c){
+  if (!c || c.kind === 'episode') return;
+  favs.has(c.url) ? favs.delete(c.url) : favs.add(c.url);
+  store.set('favs', [...favs]); render();
+}
+function setMode(m){ mode = m; cat = 'Todos'; episodes = null; render(); $('#list').scrollTop = 0; }
+
+/* Eventos */
+$('#modes').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) setMode(b.dataset.mode); });
+$('#cats').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]'); if (!b) return;
+  cat = b.dataset.cat; episodes = null; query = ''; $('#q').value = ''; render();
+  if (document.documentElement.classList.contains('tv')) $('#list').scrollTop = 0;
+});
+$('#list').addEventListener('click', e => {
+  if (e.target.closest('#back')){ episodes = null; renderList(); return; }
+  if (e.target.closest('[data-open]')){ openSheet(); return; }
+  const f = e.target.closest('[data-fav]'); if (f){ e.stopPropagation(); toggleFav(shown[+f.dataset.fav]); return; }
+  const r = e.target.closest('[data-i]'); if (r) openItem(shown[+r.dataset.i]);
+});
+$('#list').addEventListener('keydown', e => { const r = e.target.closest('[data-i]'); if (r && e.key === 'Enter') openItem(shown[+r.dataset.i]); });
+/* Filme ou série: mostra o painel; canal ao vivo: toca */
+function openItem(c){
+  if (!c) return;
+  if (c.kind === 'movie' || c.kind === 'show'){ showDetails(c); const b = $('#dPlay'); if (b && document.documentElement.classList.contains('tv')) b.focus(); return; }
+  play(c);
+}
+/* No catálogo, o painel acompanha a capa em foco (como a prévia dos canais) */
+let detailsT = null;
+$('#list').addEventListener('focusin', e => {
+  const r = e.target.closest('.card'); if (!r) return;
+  const c = shown[+r.dataset.i]; if (!c || c === detailsItem) return;
+  clearTimeout(detailsT); detailsT = setTimeout(() => showDetails(c), 250);
+});
+$('#q').addEventListener('input', e => { query = e.target.value; episodes = null; renderList(); });
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input')){ if (e.key === 'Escape') e.target.blur(); return; }
+  const k = e.key.toLowerCase();
+  if (k === 'arrowdown'){ e.preventDefault(); step(1); }
+  else if (k === 'arrowup'){ e.preventDefault(); step(-1); }
+  else if (k === '/'){ e.preventDefault(); $('#q').focus(); }
+  else if (k === 'f'){ const s = $('.screen'); try{ (document.fullscreenElement ? document.exitFullscreen() : s.requestFullscreen())?.catch(()=>{}); }catch{} }
+  else if (k === 's') toggleFav(current);
+  else if (k === '1') setMode('live'); else if (k === '2') setMode('movie'); else if (k === '3') setMode('series');
+  else if (k === 'escape') closeSheet();
+});
+
+/* Painel de listas */
+let tab = 'xtream';
+function openSheet(){ $('#sheet').hidden = false; $('#err').hidden = true; renderAcct(); renderSaved(); }
+const typeLabel = { xtream:'Xtream Codes', url:'Link M3U', file:'Arquivo M3U' };
+function renderSaved(){
+  $('#saved').innerHTML = lists.length ? lists.map(l => `
+    <div class="sl ${l.id===activeId?'on':''}">
+      <div><strong>${esc(l.name)}</strong><small>${typeLabel[l.type]}${l.type==='xtream'||l.epg?' · com guia':''}${l.id===activeId?' · em uso':''}</small></div>
+      <button class="btn" data-use="${l.id}">${l.id===activeId?'Recarregar':'Abrir'}</button>
+      ${LOCKED() ? '' : `<button class="btn del" data-del="${l.id}" aria-label="Remover ${esc(l.name)}">Remover</button>`}
+    </div>`).join('') : `<p class="note">${LOCKED() ? 'Nenhuma lista liberada ainda. Seu fornecedor adiciona as listas para o seu código.' : 'Nenhuma lista salva ainda. Adicione a primeira abaixo.'}</p>`;
+}
+$('#saved').addEventListener('click', async e => {
+  const u = e.target.closest('[data-use]'), d = e.target.closest('[data-del]');
+  if (u){ u.textContent = 'Abrindo…'; const ok = await openList(lists.find(l => l.id === u.dataset.use)); if (ok) closeSheet(); else renderSaved(); }
+  if (d){
+    if (!d.classList.contains('armed')){ d.classList.add('armed'); d.textContent = 'Confirmar'; return; }
+    const id = d.dataset.del; lists = lists.filter(l => l.id !== id); idb.del(id); idb.del('epg:' + id);
+    if (activeId === id) activeId = null;
+    saveLists(); renderSaved(); toast('Lista removida');
+  }
+});
+
+/* Abre uma lista salva. Link M3U: tenta baixar a versão nova e, se falhar, usa a cópia guardada. */
+async function openList(l, quiet){
+  if (!l) return false;
+  $('#err').hidden = true;
+  try{
+    let d;
+    if (l.type === 'xtream'){ xt = { s:l.s, u:l.u, p:l.p }; d = await loadXtream(); }
+    else {
+      xt = null; let text = null;
+      if (l.type === 'url'){
+        try{ const r = await fetch(l.url); if (r.ok){ text = await r.text(); idb.set(l.id, text); } }catch{}
+      }
+      text ??= await idb.get(l.id);
+      if (!text) throw new Error('sem cópia');
+      d = parseM3U(text);
+    }
+    activeId = l.id; saveLists();
+    if (quiet && current){ data = d; render(); } else apply(d);
+    if (l.type === 'xtream') epgData = null; else loadListEpg(l, d.epgUrl);
+    return true;
+  } catch {
+    if (l.type === 'xtream' && l.id === 'dns' && !l._failover){      // lista não carregou nesta DNS: tenta outra
+      const a = auth.get();
+      if (a && a.mode === 'dns' && a.pass){
+        const r = await dnsLogin(a.u, a.pass, null, l.s);
+        if (r.ok && r.dns !== l.s){ applyDns(a.u, a.pass, r); const nl = lists.find(x => x.id === 'dns'); if (nl){ nl._failover = true; const ok = await openList(nl, quiet); delete nl._failover; if (ok) return true; } }
+      }
+    }
+    if (quiet) return false;
+    showErr(l.type === 'xtream' ? `Não consegui conectar à lista “${l.name}”. Confira se o acesso ainda está ativo.` : `Não consegui abrir a lista “${l.name}”. Remova e adicione de novo.`);
+    $('#sheet').hidden = false; return false;
+  }
+}
+function closeSheet(){ $('#sheet').hidden = true; }
+$('#openSheet').onclick = openSheet;
+$('#closeSheet').onclick = closeSheet;
+$('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  tab = b.dataset.tab;
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== tab);
+  $('[data-epg]').hidden = tab === 'xtream';
+});
+const showErr = t => { $('#err').textContent = t; $('#err').hidden = false; };
+
+function apply(d){
+  data = d; episodes = null; cat = 'Todos';
+  mode = d.live.length ? 'live' : d.movie.length ? 'movie' : 'series';
+  render();
+}
+$('#demo').onclick = () => { xt = null; activeId = null; epgData = null; saveLists(); apply(parseM3U(DEMO)); closeSheet(); };
+
+$('#load').onclick = async () => {
+  $('#err').hidden = true;
+  const id = 'l' + Date.now().toString(36);
+  let entry, text = null;
+  if (tab === 'xtream'){
+    let sv = $('#xs').value.trim().replace(/\/+$/,''); const u = $('#xu').value.trim(), p = $('#xp').value;
+    if (!sv || !u || !p) return showErr('Preencha servidor, usuário e senha.');
+    if (!/^https?:\/\//.test(sv)) sv = 'http://' + sv;
+    entry = { id, type:'xtream', s:sv, u, p, name: $('#lname').value.trim() || u };
+  } else if (tab === 'url'){
+    const url = $('#m3uUrl').value.trim(); if (!url) return showErr('Cole o link da sua lista.');
+    entry = { id, type:'url', url, name: $('#lname').value.trim() || (url.split('/')[2] || 'Lista M3U') };
+  } else {
+    const f = $('#m3uFile').files[0]; if (!f) return showErr('Escolha um arquivo .m3u.');
+    text = await f.text();
+    entry = { id, type:'file', name: $('#lname').value.trim() || f.name.replace(/\.(m3u8?|txt)$/i,'') };
+  }
+  if (entry.type !== 'xtream'){
+    const eu = $('#epgUrl').value.trim(), ef = $('#epgFile').files[0];
+    if (ef){
+      $('#load').textContent = 'Lendo guia…';
+      try{
+        const d = parseXMLTV(await bytesToText(await ef.arrayBuffer()));
+        if (!d.count){ $('#load').textContent = 'Salvar e abrir'; return showErr('O arquivo de EPG não tem programação para hoje. Confira se é um XMLTV atualizado.'); }
+        await idb.set('epg:' + id, d); entry.epg = 'file';
+      } catch { $('#load').textContent = 'Salvar e abrir'; return showErr('Não consegui ler o arquivo de EPG.'); }
+    } else if (eu) entry.epg = eu;
+  }
+  $('#load').textContent = 'Carregando…';
+  try{
+    if (entry.type === 'url'){
+      const r = await fetch(entry.url).catch(() => null);
+      if (!r || !r.ok) throw new Error('download');
+      text = await r.text();
+    }
+    if (text !== null){
+      const d = parseM3U(text);
+      if (!d.live.length && !d.movie.length && !d.series.length){ showErr('Nenhum canal encontrado. Confira se é um arquivo M3U válido.'); return; }
+      await idb.set(id, text);
+    }
+    lists.push(entry);
+    const ok = await openList(entry);
+    if (!ok){ lists = lists.filter(l => l.id !== id); idb.del(id); saveLists(); return; }
+    ['#lname','#m3uUrl','#xs','#xu','#xp','#m3uFile','#epgUrl','#epgFile'].forEach(k => $(k).value = '');
+    closeSheet(); toast(`Lista “${entry.name}” salva`);
+  } catch {
+    showErr(entry.type === 'url' ? 'Não consegui baixar a lista. Baixe o arquivo .m3u e carregue pela aba “Arquivo”.' : 'Não consegui abrir a lista.');
+  } finally { $('#load').textContent = 'Salvar e abrir'; }
+};
+
+/* ===== DNS dos servidores (embutidas no arquivo, embaralhadas) ===== */
+function sha256(str){
+  str = unescape(encodeURIComponent(str));
+  const K = [], H = []; let n = 2, c = 0;
+  const isP = x => { for (let f = 2; f * f <= x; f++) if (x % f === 0) return false; return true; };
+  const frac = x => ((x - Math.floor(x)) * 4294967296) | 0;
+  while (c < 64){ if (isP(n)){ if (c < 8) H[c] = frac(Math.pow(n, 1/2)); K[c] = frac(Math.pow(n, 1/3)); c++; } n++; }
+  const words = [], bitLen = str.length * 8;
+  str += '\x80'; while (str.length % 64 - 56) str += '\x00';
+  for (let i = 0; i < str.length; i++) words[i >> 2] |= str.charCodeAt(i) << ((3 - i % 4) * 8);
+  words.push((bitLen / 4294967296) | 0, bitLen | 0);
+  const rr = (v, a) => (v >>> a) | (v << (32 - a));
+  let hash = H.slice();
+  for (let j = 0; j < words.length; j += 16){
+    const w = words.slice(j, j + 16);
+    let [a, b, cc, d, e, f, g, h] = hash;
+    for (let i = 0; i < 64; i++){
+      if (i >= 16){ const w15 = w[i-15], w2 = w[i-2];
+        w[i] = (w[i-16] + (rr(w15,7) ^ rr(w15,18) ^ (w15 >>> 3)) + w[i-7] + (rr(w2,17) ^ rr(w2,19) ^ (w2 >>> 10))) | 0; }
+      const t1 = (h + (rr(e,6) ^ rr(e,11) ^ rr(e,25)) + ((e & f) ^ (~e & g)) + K[i] + (w[i] | 0)) | 0;
+      const t2 = ((rr(a,2) ^ rr(a,13) ^ rr(a,22)) + ((a & b) ^ (a & cc) ^ (b & cc))) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = cc; cc = b; b = a; a = (t1 + t2) | 0;
+    }
+    const out = [a, b, cc, d, e, f, g, h];
+    hash = hash.map((x, k) => (x + out[k]) | 0);
+  }
+  return hash.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
+const XKEY = 'MGPRO#dns';
+const xorS = t => { let o = ''; for (let i = 0; i < t.length; i++) o += String.fromCharCode(t.charCodeAt(i) ^ XKEY.charCodeAt(i % XKEY.length)); return o; };
+const maskDns = v => btoa(xorS(unescape(encodeURIComponent(JSON.stringify(v)))));
+const unmaskDns = t => { try{ return t ? JSON.parse(decodeURIComponent(escape(xorS(atob(t))))) : []; }catch{ return []; } };
+const FILE_CFG = (() => { try{ return JSON.parse($('#mgcfg').textContent) || {}; }catch{ return {}; } })();
+function dnsCfg(){
+  const local = store.get('dnscfg', null), c = local || FILE_CFG;
+  return { dns:unmaskDns(c.d).filter(Boolean), p:c.p || FILE_CFG.p || '', local:!!local };
+}
+const dnsList = () => dnsCfg().dns;
+const LOCKED = () => CLOUD || dnsList().length > 0;   // com servidor ou DNS, o cliente só entra com login
+const normDns = v => { v = String(v || '').trim().replace(/\/+$/, ''); if (!v) return ''; if (!/^https?:\/\//i.test(v)) v = 'http://' + v; return v.replace(/\/(player_api\.php|get\.php|c)\b.*$/i, ''); };
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+/* Confere usuário e senha em uma DNS (padrão Xtream Codes) */
+async function xtAuth(dns, u, p, ms){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms || 8000);
+  try{
+    const r = await fetch(`${dns}/player_api.php?username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`, { signal:ctl.signal });
+    if (!r.ok) return { net:false, auth:false };        // erro do servidor (sobrecarga, limite de conexões): NÃO é senha errada
+    const j = await r.json().catch(() => null);
+    const ui = j && j.user_info;
+    if (!ui) return { net:false, auth:false };           // resposta estranha (página de erro etc.): trata como fora do ar
+    const ok = String(ui.auth) === '1';
+    return { net:true, info:ui, auth:ok, rejected:!ok };  // rejected = o servidor disse que usuário/senha são inválidos
+  } catch { return { net:false, auth:false }; }
+  finally { clearTimeout(t); }
+}
+/* Tenta as DNS em ordem (começando pela última que funcionou); a primeira que aceitar o login vale */
+/* Procura uma DNS que aceite o login:
+   1) primeiro a última que funcionou (resposta rápida, até 5 s);
+   2) se ela falhar, consulta TODAS as outras ao mesmo tempo e fica com a primeira que aceitar. */
+async function dnsLogin(u, p, prefer, skip){
+  const all = dnsList().filter(d => d !== skip);
+  if (!all.length) return { ok:false, error:'offline' };
+  let rejected = false;
+  if (prefer && all.includes(prefer)){
+    const r = await xtAuth(prefer, u, p, 7000);
+    if (r.auth) return { ok:true, dns:prefer, info:r.info };
+    if (r.rejected) rejected = true;
+  }
+  const r = await raceAuth(all.filter(d => d !== prefer), u, p);
+  if (r.ok) return r;
+  return { ok:false, error: (rejected || r.rejected) ? 'invalidUser' : 'offline' };
+}
+/* Consulta as DNS em pequenos grupos (no máximo 3 ao mesmo tempo, uma nova a cada 1 s ou assim que outra falhar).
+   Disparar todas juntas faz alguns painéis bloquearem o IP por "flood". */
+function raceAuth(list, u, p){
+  return new Promise(resolve => {
+    let next = 0, running = 0, left = list.length, rejected = false, done = false, timer = null;
+    if (!left) return resolve({ ok:false, rejected:false });
+    const finish = r => { if (done) return; done = true; clearInterval(timer); resolve(r); };
+    const launch = () => {
+      if (done || next >= list.length || running >= 3) return;
+      const d = list[next++]; running++;
+      xtAuth(d, u, p, 9000).then(r => {
+        running--;
+        if (done) return;
+        if (r.auth) return finish({ ok:true, dns:d, info:r.info });
+        if (r.rejected) rejected = true;
+        if (--left === 0) return finish({ ok:false, rejected });
+        launch();
+      });
+    };
+    launch();
+    timer = setInterval(launch, 1000);
+  });
+}
+
+/* ===== Troca automática de DNS durante o uso ===== */
+let failoverBusy = false;
+async function failoverDns(c){
+  const a = auth.get(), l = lists.find(x => x.id === activeId);
+  if (!a || a.mode !== 'dns' || !a.pass || failoverBusy || !l || l.type !== 'xtream') return false;
+  const old = l.s;
+  failoverBusy = true;
+  const msg = $('#msg'); msg.hidden = false; msg.textContent = 'Procurando outro servidor…';
+  try{
+    const r = await dnsLogin(a.u, a.pass, null, old);
+    if (!r.ok || r.dns === old) return false;
+    applyDns(a.u, a.pass, r);                                   // passa a usar a DNS nova (fica salva)
+    xt = { s:r.dns, u:a.u, p:a.pass };
+    if (c && current === c && c.url.indexOf(old) === 0){        // continua o mesmo conteúdo na DNS nova
+      const moved = Object.assign({}, c, { url:r.dns + c.url.slice(old.length) });
+      play(moved);
+    }
+    toast('Trocamos para outro servidor', 3500);
+    const nl = lists.find(x => x.id === activeId);
+    if (nl) openList(nl, true);                                  // recarrega as listas na DNS nova, em segundo plano
+    return true;
+  }catch(e){ return false; }
+  finally{ failoverBusy = false; }
+}
+function applyDns(u, p, res){
+  const st = String(res.info?.status || 'Active').toLowerCase();
+  if (st !== 'active') return st.includes('expir') ? 'expired' : 'blocked';
+  const exp = +res.info?.exp_date ? new Date(+res.info.exp_date * 1000) : null;
+  const fresh = [{ id:'dns', type:'xtream', name:'MG PRO', s:res.dns, u, p }];
+  const changed = JSON.stringify(fresh) !== JSON.stringify(lists);
+  lists = fresh; activeId = 'dns'; saveLists();
+  account = { mode:'dns', code:u, name:'', expires_at: exp ? isoDay(exp) : null };
+  store.set('account', account);
+  auth.set({ mode:'dns', u, pass:p, s:res.dns });
+  return changed ? 'changed' : 'ok';
+}
+async function syncDns(bg){
+  const a = auth.get(); if (!a?.pass) return 'login';
+  const r = await dnsLogin(a.u, a.pass, a.s);
+  if (!r.ok) return r.error === 'invalidUser' && !bg ? 'invalidUser' : 'offline';
+  const st = applyDns(a.u, a.pass, r);
+  return bg && st !== 'ok' && st !== 'changed' ? 'offline' : st;
+}
+const syncAccount = bg => auth.get()?.mode === 'dns' ? syncDns(bg) : syncCloud();
+
+/* ----- Editor secreto: segure M + G juntas por meio segundo ----- */
+const held = new Set(); let chordT = null, dnsOpen = false;
+document.addEventListener('keydown', e => {
+  const k = (e.key || '').toLowerCase();
+  if (k !== 'm' && k !== 'g'){ return; }
+  held.add(k);
+  if (held.has('m') && held.has('g')){
+    e.preventDefault(); e.stopPropagation();
+    if (!chordT && !dnsOpen) chordT = setTimeout(() => { chordT = null; if (held.has('m') && held.has('g')) openDnsEditor(); }, 500);
+  }
+}, true);
+document.addEventListener('keyup', e => { held.delete((e.key || '').toLowerCase()); if (!(held.has('m') && held.has('g'))){ clearTimeout(chordT); chordT = null; } }, true);
+window.addEventListener('blur', () => { held.clear(); clearTimeout(chordT); chordT = null; });
+
+/* No celular ou TV (sem teclado): segure o logo MG PRO por 3 segundos */
+(() => {
+  let t = null; const brand = document.querySelector('header .brand');
+  if (!brand) return;
+  const start = () => { clearTimeout(t); t = setTimeout(() => openDnsEditor(), 3000); };
+  const stop = () => { clearTimeout(t); t = null; };
+  brand.addEventListener('pointerdown', start); ['pointerup','pointerleave','pointercancel'].forEach(ev => brand.addEventListener(ev, stop));
+  brand.addEventListener('contextmenu', e => e.preventDefault());
+  brand.style.userSelect = 'none'; brand.style.webkitUserSelect = 'none'; brand.style.webkitTouchCallout = 'none';
+})();
+function openDnsEditor(){
+  held.clear(); dnsOpen = true;
+  const ae = document.activeElement; if (ae && ae.matches('input')) ae.blur();
+  $('#dnsEd').hidden = false; $('#dnsLock').hidden = false; $('#dnsBody').hidden = true;
+  $('#dnsPw').value = ''; $('#dnsErr').hidden = true;
+  setTimeout(() => $('#dnsPw').focus(), 50);
+}
+function closeDnsEditor(){ $('#dnsEd').hidden = true; dnsOpen = false; $('#dnsBody').innerHTML = ''; }
+async function unlockDns(){
+  const fail = store.get('dnsfail', { n:0, until:0 });
+  const err = t => { $('#dnsErr').textContent = t; $('#dnsErr').hidden = false; };
+  if (fail.until > Date.now()) return err(`Bloqueado por tentativas erradas. Tente de novo em ${Math.ceil((fail.until - Date.now()) / 60000)} min.`);
+  if (sha256($('#dnsPw').value) !== dnsCfg().p){
+    fail.n++; if (fail.n >= 5){ fail.n = 0; fail.until = Date.now() + 5 * 60e3; }
+    store.set('dnsfail', fail);
+    await new Promise(r => setTimeout(r, 1200));
+    return err('Senha incorreta.');
+  }
+  store.set('dnsfail', { n:0, until:0 });
+  renderDnsBody();
+}
+function renderDnsBody(){
+  const c = dnsCfg();
+  $('#dnsLock').hidden = true; $('#dnsBody').hidden = false;
+  $('#dnsBody').innerHTML = `
+    <p class="note">O cliente entra só com o usuário e a senha do servidor. O app tenta primeiro a última DNS que funcionou; se ela falhar, consulta todas as outras ao mesmo tempo e usa a primeira que aceitar.</p>
+    <div class="src">${c.local ? 'Usando DNS salvas neste aparelho (diferentes das que vieram no app).' : 'Usando as DNS que vieram dentro do app.'} · ${c.dns.length} DNS</div>
+    <div class="field"><label for="dnsArea">DNS (uma por linha)</label><textarea id="dnsArea" rows="10" spellcheck="false" autocomplete="off" placeholder="http://servidor.com:8080">${esc(c.dns.join('\n'))}</textarea></div>
+    <div class="row"><button class="btn" type="button" data-d="testall">Testar todas</button><span class="dst" id="dstAll"></span></div>
+    <div class="dnstest" id="dnsTest"></div>
+    <div class="field"><label for="dnsNewPw">Nova senha do editor (deixe em branco para manter)</label><input id="dnsNewPw" type="password" autocomplete="new-password"></div>
+    <p class="note">${IS_APP ? '<b>Salvar neste aparelho</b> vale só aqui. Para todos os clientes, coloque as DNS no arquivo do app antes de gerar o APK.' : ''}${IS_APP ? '' : '<b>Salvar neste computador</b> vale só aqui.'} ${IS_APP ? '' : 'Para os clientes receberem, use <b>Baixar MG PRO com estas DNS</b> e envie o arquivo novo.'}</p>
+    <div class="row">
+      ${c.local ? '<button class="btn" type="button" data-d="reset">Voltar às do arquivo</button>' : ''}
+      <button class="btn" type="button" data-d="close">Fechar</button>
+      <button class="btn" type="button" data-d="save">Salvar neste computador</button>
+      ${IS_APP ? '' : '<button class="btn primary" type="button" data-d="export">Baixar MG PRO com estas DNS</button>'}
+    </div>`;
+}
+function readDnsForm(){
+  const list = $('#dnsArea').value.split(/[\s,;]+/).map(normDns).filter(Boolean);
+  if (!list.length) throw new Error('Coloque pelo menos uma DNS.');
+  const npw = $('#dnsNewPw').value;
+  if (npw && npw.length < 4) throw new Error('A nova senha do editor precisa ter pelo menos 4 caracteres.');
+  return { d:maskDns([...new Set(list)]), p: npw ? sha256(npw) : dnsCfg().p };
+}
+async function pingDns(v){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000), t0 = Date.now();
+  try{ await fetch(`${v}/player_api.php`, { mode:'no-cors', signal:ctl.signal }); return Date.now() - t0; }
+  catch { return -1; }
+  finally { clearTimeout(t); }
+}
+async function testAllDns(){
+  const list = [...new Set($('#dnsArea').value.split(/[\s,;]+/).map(normDns).filter(Boolean))];
+  const box = $('#dnsTest'), st = $('#dstAll');
+  st.className = 'dst wait'; st.textContent = `Testando ${list.length} DNS…`;
+  box.innerHTML = list.map((d, i) => `<div class="dt" id="dt${i}"><span>${esc(d)}</span><b class="wait">…</b></div>`).join('');
+  let ok = 0;
+  await Promise.all(list.map(async (d, i) => {
+    const ms = await pingDns(d), el = $(`#dt${i} b`);
+    if (ms >= 0){ ok++; el.className = 'ok'; el.textContent = `respondeu (${ms} ms)`; } else { el.className = 'bad'; el.textContent = 'sem resposta'; }
+  }));
+  st.className = ok ? 'dst ok' : 'dst bad'; st.textContent = `${ok} de ${list.length} responderam`;
+}
+function exportApp(cfg){
+  const html = PRISTINE.replace(/(<script id="mgcfg" type="application\/json">)[\s\S]*?(<\/script>)/, (m, a, b) => a + JSON.stringify(cfg) + b);
+  const url = URL.createObjectURL(new Blob([html], { type:'text/html' }));
+  const a = document.createElement('a'); a.href = url; a.download = 'mg-pro.html'; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+$('#dnsEd').addEventListener('click', async e => {
+  const b = e.target.closest('[data-d]'); if (!b) return;
+  const a = b.dataset.d;
+  if (a === 'close') return closeDnsEditor();
+  if (a === 'unlock') return unlockDns();
+  if (a === 'testall') return testAllDns();
+  if (a === 'reset'){ store.set('dnscfg', null); renderDnsBody(); toast('Voltou às DNS do arquivo'); return; }
+  try{
+    const cfg = readDnsForm();
+    if (a === 'save'){ store.set('dnscfg', cfg); renderDnsBody(); toast('DNS salvas neste computador'); }
+    if (a === 'export'){ exportApp(cfg); toast('Arquivo mg-pro.html baixado'); }
+  } catch(ex){ toast(ex.message); }
+});
+$('#dnsPw').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); unlockDns(); } });
+$('#dnsEd').addEventListener('keydown', e => { if (e.key === 'Escape'){ e.stopPropagation(); closeDnsEditor(); } });
+
+/* ===== Atalho na tela (notebook e celular) ===== */
+const ICON_SRC = document.querySelector('link[rel="icon"]').href;
+let installEvt = null;   // existe quando o app está num site com https e o navegador permite instalar
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+/* Ícone PNG para iPhone/Android (desenhado na hora) */
+(() => {
+  try{
+    const c = document.createElement('canvas'); c.width = c.height = 180; const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 180, 180); g.addColorStop(0, '#0f2154'); g.addColorStop(1, '#040919');
+    x.fillStyle = g; x.fillRect(0, 0, 180, 180);
+    x.strokeStyle = '#2fa8ff'; x.lineWidth = 7; x.beginPath(); x.roundRect ? x.roundRect(9, 9, 162, 162, 32) : x.rect(9, 9, 162, 162); x.stroke();
+    x.fillStyle = '#ff7a1a'; x.shadowColor = '#ff7a1a'; x.shadowBlur = 18; x.beginPath(); x.moveTo(68, 50); x.lineTo(130, 90); x.lineTo(68, 130); x.closePath(); x.fill();
+    const l = document.createElement('link'); l.rel = 'apple-touch-icon'; l.href = c.toDataURL('image/png'); document.head.append(l);
+  }catch{}
+})();
+function device(){
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const android = /Android/i.test(ua);
+  const os = ios ? 'ios' : android ? 'android' : /Windows/i.test(ua) ? 'windows' : /Mac/i.test(ua) ? 'mac' : 'linux';
+  const browser = /Edg\//.test(ua) ? 'edge' : /SamsungBrowser/.test(ua) ? 'samsung' : /Firefox|FxiOS/.test(ua) ? 'firefox' : /CriOS|Chrome/.test(ua) ? 'chrome' : /Safari/.test(ua) ? 'safari' : 'outro';
+  return { os, browser, mobile: ios || android };
+}
+const IS_APP = /MGPROApp/.test(navigator.userAgent);   // rodando dentro do aplicativo Android
+const standalone = () => IS_APP || /Web0S|webOS|Tizen|MGPROTV|SMART-TV|SmartTV|AFT[A-Z]|[?&]tv=1\b/i.test(navigator.userAgent + location.search) || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+/* Arquivo de atalho para a área de trabalho (abre o MG PRO neste mesmo endereço) */
+function downloadShortcut(os){
+  const url = location.href.split('#')[0];
+  let name, body, type = 'application/octet-stream';
+  if (os === 'windows'){ name = 'MG PRO.url'; body = `[InternetShortcut]\r\nURL=${url}\r\n`; }
+  else if (os === 'mac'){ name = 'MG PRO.webloc'; body = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict><key>URL</key><string>${url.replace(/&/g,'&amp;')}</string></dict></plist>\n`; }
+  else { name = 'mg-pro.desktop'; body = `[Desktop Entry]\nType=Link\nName=MG PRO\nURL=${url}\nIcon=video-display\n`; }
+  const href = URL.createObjectURL(new Blob([body], { type }));
+  const a = document.createElement('a'); a.href = href; a.download = name; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 10000);
+  toast(`Atalho do MG PRO baixado. Arraste o arquivo “${name}” da pasta Downloads para a Área de Trabalho.`, 7000);
+}
+function openInstall(){
+  const d = device(), local = location.protocol === 'file:';
+  $('#instIcon').src = ICON_SRC;
+  const devName = { ios:'iPhone / iPad', android:'Android', windows:'Windows', mac:'Mac', linux:'Linux' }[d.os];
+  const brName = { chrome:'Chrome', edge:'Edge', firefox:'Firefox', safari:'Safari', samsung:'Samsung Internet', outro:'seu navegador' }[d.browser];
+  $('#instDev').textContent = `${devName} · ${brName}`;
+  let html = '';
+  if (standalone()){
+    html = '<p class="note">O MG PRO já está aberto pelo atalho. Está tudo certo.</p>';
+  } else if (installEvt){
+    html = `<p class="note">Seu navegador permite instalar o MG PRO como aplicativo, com ícone ${d.mobile ? 'na tela inicial' : 'na área de trabalho e no menu Iniciar'}.</p>
+      <button class="btn primary" type="button" data-i="prompt">Instalar MG PRO</button>`;
+  } else if (d.os === 'ios'){
+    html = `<ol class="steps">
+      <li><span>Abra esta página no <b>Safari</b>${d.browser !== 'safari' ? ' (no Chrome do iPhone o atalho também funciona pelo botão Compartilhar)' : ''}.</span></li>
+      <li><span>Toque no botão <b>Compartilhar</b> (o quadrado com a seta para cima).</span></li>
+      <li><span>Escolha <b>Adicionar à Tela de Início</b> e toque em <b>Adicionar</b>.</span></li></ol>`;
+  } else if (d.os === 'android' && !/^https?:$/.test(location.protocol)){
+    html = `<p class="note">Aberto como arquivo, o navegador do Android não mostra a opção de atalho. Crie o atalho pelo app de arquivos do celular:</p>
+      <ol class="steps">
+      <li><span>Abra o app <b>Meus Arquivos</b> (Samsung) ou <b>Arquivos</b> e encontre o <b>mg-pro.html</b> (geralmente em <b>Downloads</b>).</span></li>
+      <li><span>Segure o dedo em cima do arquivo e toque nos <b>três pontinhos ⋮</b> ou em <b>Mais</b>.</span></li>
+      <li><span>Escolha <b>Adicionar à tela inicial</b> (ou <b>Criar atalho</b>). Se pedir, escolha abrir com o <b>Chrome</b>.</span></li></ol>
+      <p class="note">Nem todo celular tem essa opção. Se o seu não tiver, peça ao seu fornecedor a versão em aplicativo (APK).</p>`;
+  } else if (d.os === 'android'){
+    html = d.browser === 'samsung'
+      ? `<ol class="steps"><li><span>Toque no menu <b>≡</b> embaixo.</span></li><li><span>Escolha <b>Adicionar página a</b> → <b>Tela inicial</b>.</span></li><li><span>Confirme em <b>Adicionar</b>.</span></li></ol>`
+      : `<ol class="steps"><li><span>Toque nos <b>três pontinhos ⋮</b> no canto de cima.</span></li><li><span>Escolha <b>Adicionar à tela inicial</b> (ou <b>Instalar app</b>).</span></li><li><span>Confirme em <b>Adicionar</b>. O ícone do MG PRO aparece junto dos seus apps.</span></li></ol>`;
+  } else {
+    const chromeSteps = d.browser === 'edge'
+      ? `<li><span>Clique nos <b>três pontinhos ⋯</b> no canto de cima do Edge.</span></li>
+         <li><span>Vá em <b>Mais ferramentas</b> → <b>Fixar na barra de tarefas</b> ou <b>Criar atalho</b>.</span></li>
+         <li><span>Marque <b>Abrir como janela</b> e confirme. O ícone aparece na área de trabalho.</span></li>`
+      : `<li><span>Clique nos <b>três pontinhos ⋮</b> no canto de cima do Chrome.</span></li>
+         <li><span>Vá em <b>Transmitir, salvar e compartilhar</b> → <b>Criar atalho…</b></span></li>
+         <li><span>Marque <b>Abrir como janela</b> e clique em <b>Criar</b>. O ícone do MG PRO aparece na área de trabalho.</span></li>`;
+    html = `<ol class="steps">${chromeSteps}</ol>
+      <div class="alt"><p class="note">Outro jeito: baixe um atalho pronto e coloque na Área de Trabalho.${local ? ' Mantenha o arquivo mg-pro.html sempre na mesma pasta, senão o atalho deixa de achar o app.' : ''}</p>
+      <button class="btn" type="button" data-i="file">Baixar atalho para a Área de Trabalho</button></div>`;
+  }
+  $('#instBody').innerHTML = html;
+  $('#instNever').checked = !!store.get('instNever', false);
+  $('#instEd').hidden = false;
+}
+/* Seta: faz o máximo possível com um clique */
+async function quickInstall(){
+  if (standalone()) return toast('O MG PRO já está aberto pelo atalho');
+  if (installEvt){                                   // site com https: o navegador instala com uma confirmação
+    installEvt.prompt();
+    const r = await installEvt.userChoice.catch(() => null); installEvt = null;
+    if (r?.outcome === 'accepted') toast('MG PRO instalado');
+    return;
+  }
+  const d = device();
+  if (!d.mobile) return downloadShortcut(d.os);      // notebook: baixa o atalho pronto na hora
+  openInstall();                                     // celular: o navegador não deixa criar sozinho, mostra o passo a passo
+}
+$('#installBtn').onclick = quickInstall;
+$('#instClose').onclick = () => { $('#instEd').hidden = true; };
+$('#instNever').onchange = e => store.set('instNever', e.target.checked);
+$('#instEd').addEventListener('click', async e => {
+  if (e.target.id === 'instEd'){ $('#instEd').hidden = true; return; }
+  const b = e.target.closest('[data-i]'); if (!b) return;
+  if (b.dataset.i === 'file') downloadShortcut(device().os);
+  if (b.dataset.i === 'prompt' && installEvt){
+    installEvt.prompt();
+    const r = await installEvt.userChoice.catch(() => null);
+    installEvt = null; $('#instEd').hidden = true;
+    if (r?.outcome === 'accepted') toast('MG PRO instalado');
+  }
+});
+$('#instEd').addEventListener('keydown', e => { if (e.key === 'Escape') $('#instEd').hidden = true; });
+window.addEventListener('appinstalled', () => { $('#installBtn').hidden = true; });
+if (standalone()) $('#installBtn').hidden = true;
+/* Sugere o atalho uma vez, logo depois do primeiro uso */
+function suggestInstall(){
+  if (standalone() || store.get('instNever', false) || store.get('instShown', false)) return;
+  store.set('instShown', true);
+  setTimeout(() => { if ($('#sheet').hidden && $('#login').hidden && $('#dnsEd').hidden) openInstall(); }, 4000);
+}
+
+/* ===== Conta do cliente (código + senha no servidor) ===== */
+let account = store.get('account', null);   // {code, name, expires_at}
+const auth = { get:() => store.get('auth', null), set:v => store.set('auth', v) };
+const loginMsg = {
+  invalid:'Código ou senha incorretos.',
+  invalidUser:'Usuário ou senha incorretos.',
+  offline:'Não foi possível falar com o servidor. Verifique sua internet e tente de novo.',
+  locked:'Muitas tentativas erradas. Aguarde 15 minutos e tente de novo.',
+  blocked:'Seu acesso está bloqueado. Fale com seu fornecedor.',
+  expired:'Seu acesso venceu. Fale com seu fornecedor para renovar.'
+};
+const brDate = d => new Date(d + 'T12:00:00').toLocaleDateString('pt-BR');
+const daysTo = d => Math.round((new Date(d + 'T00:00:00') - new Date(new Date().toDateString())) / 864e5);
+
+async function cloudLogin(code, pass){
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/client_login`, { method:'POST',
+    headers:{ apikey:SB_KEY, 'Content-Type':'application/json' }, body:JSON.stringify({ p_code:code, p_pass:pass }) });
+  if (!r.ok) throw new Error('servidor');
+  return r.json();
+}
+function applyCloud(res, code){
+  const fresh = (res.lists || []).map(p => p.type === 'xtream'
+    ? { id:p.id, type:'xtream', name:p.name || `Lista ${p.position}`, s:(/^https?:\/\//i.test(p.server || '') ? p.server : 'http://' + (p.server || '')).replace(/\/+$/,''), u:p.username || '', p:p.password || '' }
+    : { id:p.id, type:'url', name:p.name || `Lista ${p.position}`, url:p.url || '', epg:p.epg || '' });
+  const changed = JSON.stringify(fresh) !== JSON.stringify(lists);
+  for (const old of lists) if (!fresh.find(n => n.id === old.id)){ idb.del(old.id); idb.del('epg:' + old.id); }
+  lists = fresh;
+  account = { code, name:res.name || '', expires_at:res.expires_at || null };
+  store.set('account', account);
+  if (!lists.find(l => l.id === activeId)) activeId = lists[0]?.id || null;
+  saveLists();
+  return changed;
+}
+/* Confere a conta no servidor. Resultado: 'ok', 'changed', 'offline', 'login' ou o motivo do bloqueio */
+async function syncCloud(){
+  const a = auth.get(); if (!a) return 'login';
+  let res;
+  try{ res = await cloudLogin(a.code, a.pass); } catch { return 'offline'; }
+  if (!res.ok) return res.error || 'invalid';
+  return applyCloud(res, a.code) ? 'changed' : 'ok';
+}
+function stopPlayer(){
+  playToken++; try{ $('#v').pause(); }catch(e){} cleanupPlayers();
+  if (NATIVE){ try{ MGNative.stop(); }catch(e){} }
+  current = null; clearInterval(epgTimer); $('#epg').hidden = true; $('#epgMore').hidden = true; $('#osd').hidden = true; document.body.classList.remove('playing');
+  $('#msg').hidden = false; $('#msg').textContent = 'Escolha algo para assistir';
+  $('#nowName').textContent = 'Nada tocando'; $('#nowSub').textContent = ''; $('#nowPlot').hidden = true;
+}
+let loginMode = 'code';
+function setLoginMode(m){
+  loginMode = m;
+  document.querySelectorAll('#ltabs button').forEach(b => b.classList.toggle('on', b.dataset.lt === m));
+  const dns = m === 'dns';
+  $('#lcLabel').textContent = dns ? 'Usuário' : 'Código';
+  $('#lc').placeholder = dns ? 'Seu usuário' : 'MG-000000';
+  $('#lc').setAttribute('autocapitalize', dns ? 'none' : 'characters');
+  $('#loginNote').textContent = dns
+    ? 'Entre com o usuário e a senha do seu plano. Você só precisa fazer isso uma vez neste computador.'
+    : 'Use o código e a senha que você recebeu do seu fornecedor. Você só precisa fazer isso uma vez neste computador.';
+}
+$('#ltabs').addEventListener('click', e => { const b = e.target.closest('[data-lt]'); if (b){ setLoginMode(b.dataset.lt); $('#loginErr').hidden = true; $('#lc').focus(); } });
+function showLogin(msg){
+  const a = auth.get(), hasD = dnsList().length > 0;
+  $('#ltabs').hidden = !(hasD && CLOUD);
+  let m = a?.mode === 'dns' ? 'dns' : a ? 'code' : (hasD ? 'dns' : 'code');
+  if (m === 'dns' && !hasD) m = 'code'; if (m === 'code' && !CLOUD) m = 'dns';
+  setLoginMode(m);
+  $('#lc').value = (a?.mode === 'dns' ? a.u : a?.code) || $('#lc').value;
+  $('#lpw').value = a?.pass || '';
+  $('#loginErr').textContent = msg || ''; $('#loginErr').hidden = !msg;
+  $('#loginTitle').textContent = msg && a ? 'Acesso interrompido' : 'Entrar';
+  $('#login').hidden = false;
+  setTimeout(() => ($('#lc').value ? $('#lpw') : $('#lc')).focus(), 50);
+}
+function denied(reason){
+  stopPlayer(); closeSheet();
+  data = { live:[], movie:[], series:[] }; episodes = null; render();
+  showLogin(loginMsg[reason] || loginMsg.invalid);   // a senha salva continua preenchida
+}
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = t => { $('#loginErr').textContent = t; $('#loginErr').hidden = false; };
+  if (loginMode === 'dns'){
+    const u = $('#lc').value.trim(), pass = $('#lpw').value;
+    if (!u || !pass) return err('Digite o usuário e a senha.');
+    $('#loginBtn').disabled = true; $('#loginBtn').textContent = 'Conectando…';
+    try{
+      const r = await dnsLogin(u, pass, auth.get()?.s);
+      if (!r.ok) return err(loginMsg[r.error]);
+      const st = applyDns(u, pass, r);
+      if (st === 'expired' || st === 'blocked') return err(loginMsg[st]);
+      $('#login').hidden = true;
+      await startLists();
+      toast(`Bem-vindo, ${u}!`); warnExpiry();
+    } finally { $('#loginBtn').disabled = false; $('#loginBtn').textContent = 'Entrar'; }
+    return;
+  }
+  const code = $('#lc').value.trim().toUpperCase(), pass = $('#lpw').value;
+  if (!code || !pass) return err('Digite o código e a senha.');
+  $('#loginBtn').disabled = true; $('#loginBtn').textContent = 'Entrando…';
+  try{
+    const res = await cloudLogin(code, pass);
+    if (!res.ok) return err(loginMsg[res.error] || loginMsg.invalid);
+    auth.set({ code, pass });
+    applyCloud(res, code);
+    $('#login').hidden = true;
+    await startLists();
+    toast(account.name ? `Bem-vindo, ${account.name}!` : 'Bem-vindo ao MG PRO!');
+    warnExpiry();
+  } catch { err('Sem conexão com o servidor. Verifique sua internet e tente de novo.'); }
+  finally { $('#loginBtn').disabled = false; $('#loginBtn').textContent = 'Entrar'; }
+});
+function warnExpiry(){
+  if (!account?.expires_at) return;
+  const d = daysTo(account.expires_at);
+  if (d >= 0 && d <= 5) setTimeout(() => toast(d === 0 ? 'Seu acesso vence hoje' : `Seu acesso vence em ${d} dia${d > 1 ? 's' : ''}`), 2500);
+}
+function renderAcct(){
+  const box = $('#acct');
+  const L = LOCKED();
+  $('#addBox').hidden = L; $('#demo').hidden = L; $('#load').hidden = L;
+  $('#sheetTitle').textContent = L ? 'Minha conta' : 'Minhas listas';
+  if (!L || !account){ box.hidden = true; return; }
+  const d = account.expires_at ? daysTo(account.expires_at) : null;
+  box.hidden = false;
+  box.innerHTML = `<div><strong>${esc(account.name || 'Minha conta')}</strong>
+      <small>${account.mode === 'dns' ? 'Usuário' : 'Código'} ${esc(account.code)}${account.expires_at ? ` · <span class="${d <= 5 ? 'warn' : ''}">válido até ${brDate(account.expires_at)}</span>` : ''}</small></div>
+    <button class="btn" id="syncBtn" type="button">Atualizar</button>
+    <button class="btn del" id="logoutBtn" type="button">Sair</button>`;
+}
+$('#acct').addEventListener('click', async e => {
+  if (e.target.closest('#syncBtn')){
+    const b = e.target.closest('#syncBtn'); b.textContent = 'Atualizando…';
+    const st = await syncAccount();
+    if (st === 'offline'){ b.textContent = 'Atualizar'; return toast('Sem conexão com o servidor'); }
+    if (st !== 'ok' && st !== 'changed') return denied(st);
+    if (st === 'changed'){ const l = lists.find(x => x.id === activeId); if (l) await openList(l); else { stopPlayer(); data = { live:[], movie:[], series:[] }; render(); } }
+    renderAcct(); renderSaved(); toast(st === 'changed' ? 'Listas atualizadas' : 'Tudo em dia');
+  }
+  const lo = e.target.closest('#logoutBtn');
+  if (lo){
+    if (!lo.classList.contains('armed')){ lo.classList.add('armed'); lo.textContent = 'Confirmar saída'; return; }
+    for (const l of lists){ idb.del(l.id); idb.del('epg:' + l.id); }
+    auth.set(null); account = null; store.set('account', null);
+    lists = []; activeId = null; saveLists(); xt = null; epgData = null;
+    stopPlayer(); data = { live:[], movie:[], series:[] }; render(); closeSheet();
+    $('#lc').value = ''; showLogin();
+  }
+});
+
+async function startLists(){
+  const l = lists.find(x => x.id === activeId);
+  if (l){
+    $('#list').innerHTML = `<div class="empty">Abrindo “${esc(l.name)}”…</div>`;
+    const ok = await openList(l);
+    if (!ok) data = { live:[], movie:[], series:[] };
+  } else data = LOCKED() ? { live:[], movie:[], series:[] } : parseM3U(DEMO);
+  mode = data.live.length ? 'live' : data.movie.length ? 'movie' : data.series.length ? 'series' : 'live';
+  const last = store.get('last', null);
+  current = last ? [...data.live, ...data.movie].find(c => c.url === last) || null : null;
+  render();
+  suggestInstall();
+}
+
+/* ===== Modo TV: controle remoto (LG webOS, Samsung Tizen, TV Box, Fire TV) ===== */
+const UA = navigator.userAgent;
+const IS_WEBOS = /Web0S|webOS/i.test(UA), IS_TIZEN = /Tizen/i.test(UA);
+const TV_OS = IS_WEBOS || IS_TIZEN;
+const IS_TV = TV_OS || /MGPROTV|SMART-TV|SmartTV|AFT[A-Z]|Android TV|GoogleTV|BRAVIA|HbbTV/i.test(UA) || /[?&]tv=1\b/.test(location.search);
+const FOCUSABLE = 'button:not([disabled]):not(.fav), input:not([type=hidden]):not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+
+function setFull(on){
+  document.body.classList.toggle('full', !!on);
+  if (on){ if (current && current.kind === 'live') showTvOsd(); }
+  else {
+    $('#tvosd').hidden = true;
+    if (current && current.kind !== 'live' && detailsItem){   // filme/episódio: encerra e volta ao painel do título
+      stopPlayer(); showDetails(detailsItem); const b = $('#dPlay'); if (b) b.focus(); return;
+    }
+    const r = $('#list .ch.on'); if (IS_TV && r) r.focus();
+  }
+}
+function showTvOsd(numText){
+  const o = $('#tvosd');
+  if (numText !== undefined){ $('#tvosdNum').textContent = numText; $('#tvosdName').textContent = 'Ir para o canal'; $('#tvosdSub').textContent = ''; }
+  else {
+    if (!current) return;
+    $('#tvosdNum').textContent = current.kind === 'live' && current.n ? String(current.n) : '▶';
+    $('#tvosdName').textContent = current.name;
+    $('#tvosdSub').textContent = $('#nowSub').textContent;
+  }
+  o.hidden = false; clearTimeout(showTvOsd.t); showTvOsd.t = setTimeout(() => o.hidden = true, 4000);
+}
+
+if (IS_TV){
+  document.documentElement.classList.add('tv');
+  $('.screen').setAttribute('tabindex', '0');
+  $('#v').controls = false; $('#v').setAttribute('tabindex', '-1');
+  /* Samsung: pede para receber as teclas especiais do controle */
+  try{
+    if (window.tizen && tizen.tvinputdevice) ['MediaPlayPause','MediaPlay','MediaPause','MediaStop','ChannelUp','ChannelDown','ColorF0Red','ColorF1Green','ColorF2Yellow','ColorF3Blue','0','1','2','3','4','5','6','7','8','9']
+      .forEach(k => { try{ tizen.tvinputdevice.registerKey(k); }catch(e){} });
+  }catch(e){}
+}
+
+function openCats(){}    // categorias ficam sempre visíveis numa coluna
+function closeCats(){ document.body.classList.remove('cats-open'); }
+function tvScope(){
+  for (const id of ['#dnsEd', '#instEd', '#login', '#sheet']){ const el = $(id); if (el && !el.hidden) return el; }
+  return $('.app');
+}
+function tvFocusables(scope){
+  return [...scope.querySelectorAll(FOCUSABLE)].filter(el => {
+    if (el.closest('[hidden]')) return false;
+    const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;
+  });
+}
+function tvFocus(el){ if (!el) return false; el.focus(); try{ el.scrollIntoView({ block:'nearest', inline:'nearest' }); }catch(e){} return true; }
+/* Escolhe o item mais próximo na direção da seta */
+function tvSpatial(cur, dir, list){
+  const a = cur.getBoundingClientRect(), ac = { x:a.left + a.width / 2, y:a.top + a.height / 2 };
+  let best = null, bs = Infinity;
+  for (const el of list){
+    if (el === cur || cur.contains(el)) continue;
+    const b = el.getBoundingClientRect(), bc = { x:b.left + b.width / 2, y:b.top + b.height / 2 };
+    const dx = bc.x - ac.x, dy = bc.y - ac.y;
+    let main, cross;
+    if (dir === 'down' || dir === 'up'){
+      if (dir === 'down' ? (b.top < a.bottom - 2 && dy <= 4) || dy <= 4 : (b.bottom > a.top + 2 && dy >= -4) || dy >= -4) continue;
+      main = Math.abs(dy); cross = (b.left < a.right && b.right > a.left) ? 0 : Math.abs(dx);
+    } else {
+      if (dir === 'right' ? dx <= 4 : dx >= -4) continue;
+      main = Math.abs(dx); cross = (b.top < a.bottom && b.bottom > a.top) ? 0 : Math.abs(dy);
+    }
+    const score = main + cross * 2.5;
+    if (score < bs){ bs = score; best = el; }
+  }
+  return best;
+}
+/* Atalhos dentro das listas: sobe e desce item por item, e pula entre as colunas */
+function tvListMove(cur, dir){
+  if (cur.closest('#list .card')) return null;   // grade de capas: navegação pela posição na tela
+  const row = cur.closest('#list .ch, #list .back'), cat = cur.closest('#cats .cat');
+  const sib = (el, sel) => { let n = el; do { n = dir === 'down' ? n.nextElementSibling : n.previousElementSibling; } while (n && !n.matches(sel)); return n; };
+  if (row){
+    if (dir === 'down' || dir === 'up'){ const n = sib(row, '.ch, .back'); if (n) return n; return dir === 'down' ? row : null; }
+    if (dir === 'left'){ openCats(); return $('#cats .cat.on') || $('#cats .cat'); }
+    if (dir === 'right') return $('.screen');
+  }
+  if (cat){
+    if (dir === 'down' || dir === 'up'){ const n = sib(cat, '.cat'); if (n) return n; return dir === 'down' ? cat : null; }
+    if (dir === 'right'){ closeCats(); return $('#list .ch.on') || $('#list .ch, #list .back'); }
+    if (dir === 'left') return cat;
+  }
+  if (cur.matches('.screen') && dir === 'left') return $('#list .ch.on') || $('#list .ch, #list .back');
+  return null;
+}
+let tvDigits = '', tvDigitT = null, tvLastBack = 0, tvAuto = false;   // tvAuto: foco posto pelo app, a pessoa ainda não mexeu
+function tvDigit(d){
+  tvDigits = (tvDigits + d).slice(-4);
+  showTvOsd(tvDigits + '_');
+  clearTimeout(tvDigitT);
+  tvDigitT = setTimeout(() => {
+    const n = parseInt(tvDigits, 10); tvDigits = '';
+    const c = data.live[n - 1];
+    if (c){ play(c); if (document.body.classList.contains('full')) showTvOsd(); else tvFocus($('#list .ch.on')); }
+    else { $('#tvosd').hidden = true; toast(`O canal ${n} não existe nesta lista`); }
+  }, 1500);
+}
+function tvExit(){
+  if (Date.now() - tvLastBack > 2500){ tvLastBack = Date.now(); toast('Aperte Voltar de novo para sair', 2500); return; }
+  try{ if (window.PalmSystem && PalmSystem.platformBack) return PalmSystem.platformBack(); }catch(e){}
+  try{ if (window.tizen && tizen.application) return tizen.application.getCurrentApplication().exit(); }catch(e){}
+  try{ window.close(); }catch(e){}
+}
+const KEY = {
+  back:[461, 10009, 8, 27], ok:[13], play:[415, 19, 10252, 179, 413], chUp:[427, 33], chDown:[428, 34],
+  red:[403], green:[404], yellow:[405], blue:[406]
+};
+const isKey = (e, name, names) => KEY[name].includes(e.keyCode) || (names || []).includes(e.key);
+document.addEventListener('keydown', e => {
+  if (!IS_TV) return;
+  const ae = document.activeElement, inInput = ae && ae.matches('input, textarea, select');
+  const full = document.body.classList.contains('full');
+  const arrows = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', Up:'up', Down:'down', Left:'left', Right:'right' };
+  const dir = arrows[e.key] || { 38:'up', 40:'down', 37:'left', 39:'right' }[e.keyCode];
+  const stop = () => { e.preventDefault(); e.stopPropagation(); };
+
+  /* Voltar */
+  if (isKey(e, 'back', ['GoBack', 'BrowserBack', 'Escape']) && !(inInput && (e.keyCode === 8 || e.key === 'Backspace'))){
+    stop(); if (!window.mgBack()) tvExit(); return;
+  }
+  /* Tela cheia: setas sobem e descem canal, OK mostra informações */
+  if (full){
+    if (dir === 'up' || isKey(e, 'chUp', ['ChannelUp', 'PageUp'])){ stop(); step(-1); showTvOsd(); return; }
+    if (dir === 'down' || isKey(e, 'chDown', ['ChannelDown', 'PageDown'])){ stop(); step(1); showTvOsd(); return; }
+    if (isKey(e, 'ok')){ stop(); showTvOsd(); return; }
+  }
+  if (isKey(e, 'chUp', ['ChannelUp', 'PageUp'])){ stop(); step(-1); if (full) showTvOsd(); else tvFocus($('#list .ch.on')); return; }
+  if (isKey(e, 'chDown', ['ChannelDown', 'PageDown'])){ stop(); step(1); if (full) showTvOsd(); else tvFocus($('#list .ch.on')); return; }
+  if (isKey(e, 'play', ['MediaPlayPause', 'MediaPlay', 'MediaPause'])){ stop(); mediaToggle(); return; }
+  if (!inInput && tvScope() === $('.app')){
+    if (isKey(e, 'red', ['ColorF0Red'])){ stop(); toggleFav(current); toast(current && favs.has(current.url) ? 'Adicionado aos favoritos' : 'Removido dos favoritos'); return; }
+    if (isKey(e, 'green', ['ColorF1Green'])){ stop(); setMode({ live:'movie', movie:'series', series:'live' }[mode]); tvFocus($('#list .ch, #list .back')); return; }
+    if (isKey(e, 'yellow', ['ColorF2Yellow'])){ stop(); setFull(false); tvFocus($('#q')); return; }
+    if (isKey(e, 'blue', ['ColorF3Blue'])){ stop(); setFull(false); openSheet(); return; }
+    const dg = (e.keyCode >= 48 && e.keyCode <= 57) ? e.keyCode - 48 : (e.keyCode >= 96 && e.keyCode <= 105) ? e.keyCode - 96 : -1;
+    if (dg >= 0 && mode === 'live' && !episodes){ stop(); tvDigit(String(dg)); return; }
+  }
+  if (full) return;
+
+  /* OK */
+  if (isKey(e, 'ok') && !inInput){
+    if (ae && ae.matches('.screen')){ stop(); if (current) setFull(true); return; }
+    const row = ae && ae.closest('#list .ch');
+    if (row){
+      stop();
+      const c = shown[+row.dataset.i];
+      if (c && (c.kind === 'movie' || c.kind === 'show')) openItem(c);
+      else if (c && current && c.url === current.url) setFull(true); else play(c);
+      return;
+    }
+    return;   // botões e campos recebem o OK normalmente
+  }
+  /* Setas */
+  if (!dir) return;
+  tvAuto = false;
+  if (inInput && (dir === 'left' || dir === 'right') && ae.value){
+    const atStart = ae.selectionStart === 0 && ae.selectionEnd === 0, atEnd = ae.selectionStart === ae.value.length;
+    if ((dir === 'left' && !atStart) || (dir === 'right' && !atEnd)) return;   // anda dentro do texto
+  }
+  stop();
+  const scope = tvScope();
+  if (!ae || ae === document.body || !scope.contains(ae)){
+    tvFocus((scope === $('.app') && ($('#list .ch.on') || $('#list .ch, #list .back') || $('#cats .cat'))) || tvFocusables(scope)[0]);
+    return;
+  }
+  const target = (scope === $('.app') && tvListMove(ae, dir)) || tvSpatial(ae, dir, tvFocusables(scope));
+  if (target && target !== ae) tvFocus(target);
+}, true);
+
+/* Marca quando o guia está visível (na TV, o nome do canal divide a faixa com o guia) */
+new MutationObserver(() => document.body.classList.toggle('has-epg', !$('#epg').hidden)).observe($('#epg'), { attributes:true, attributeFilter:['hidden'] });
+
+/* Depois que a lista é redesenhada, o foco volta para o mesmo lugar */
+if (IS_TV){
+  let lastKey = null, restoring = false;
+  document.addEventListener('focusin', e => {
+    if (restoring) return;   // só memoriza o lugar quando quem escolheu foi a pessoa
+    const t = e.target;
+    if (t.closest && t.closest('#list .ch')) lastKey = { list:t.closest('.ch').dataset.i };
+    else if (t.closest && t.closest('#cats .cat')) lastKey = { cat:t.closest('.cat').dataset.cat };
+    else if (t.closest && t.closest('#list .back')) lastKey = { back:true };
+  });
+  const restore = () => {
+    if (document.body.classList.contains('full') || tvScope() !== $('.app')) return;
+    const ae = document.activeElement;
+    const kept = ae && ae !== document.body && document.contains(ae) && !ae.closest('[hidden]');
+    /* se o app pôs o foco antes da lista carregar, leva para a lista quando os canais aparecerem */
+    const moveToList = kept && tvAuto && !ae.closest('#list .ch') && $('#list .ch');
+    if (kept && !moveToList) return;
+    let el = null;
+    if (lastKey && lastKey.list !== undefined) el = $(`#list .ch[data-i="${lastKey.list}"]`);
+    else if (lastKey && lastKey.cat !== undefined) el = [...document.querySelectorAll('#cats .cat')].find(c => c.dataset.cat === lastKey.cat);
+    else if (lastKey && lastKey.back) el = $('#list .back');
+    if (moveToList) el = null;
+    tvAuto = !el;
+    restoring = tvAuto;
+    tvFocus(el || $('#list .ch.on') || $('#list .ch, #list .back') || (openCats(), $('#cats .cat')));
+    restoring = false;
+    if (tvAuto && document.activeElement && document.activeElement.closest('#list .ch')) tvAuto = false;
+  };
+  new MutationObserver(() => setTimeout(restore, 0)).observe($('#list'), { childList:true });
+  new MutationObserver(() => setTimeout(restore, 0)).observe($('#cats'), { childList:true });
+  ['#sheet', '#login', '#instEd', '#dnsEd'].forEach(id => new MutationObserver(() => {
+    const el = $(id);
+    if (!el.hidden && !el.contains(document.activeElement)) setTimeout(() => tvFocus(tvFocusables(el)[0]), 60);
+    else if (el.hidden) setTimeout(restore, 80);
+  }).observe($(id), { attributes:true, attributeFilter:['hidden'] }));
+}
+
+/* Botão Voltar do Android: fecha o que estiver aberto; se não tiver nada, o app sai */
+window.mgBack = () => {
+  if (document.body.classList.contains('full')){ setFull(false); return true; }
+  if (document.activeElement && document.activeElement.closest('#dEps') && detailsSeason !== null){ seasonsBack(); return true; }
+  if (document.activeElement && document.activeElement.closest('#details')){
+    const i = detailsItem ? shown.indexOf(detailsItem) : -1;
+    const r = (i >= 0 && $(`#list .ch[data-i="${i}"]`)) || $('#list .card'); if (r){ r.focus(); return true; }
+  }
+  if (document.body.classList.contains('cats-open')){ closeCats(); const r = $('#list .ch.on') || $('#list .ch, #list .back'); if (r) r.focus(); return true; }
+  if (!$('#dnsEd').hidden){ closeDnsEditor(); return true; }
+  if (!$('#instEd').hidden){ $('#instEd').hidden = true; return true; }
+  if (!$('#sheet').hidden){ closeSheet(); return true; }
+  if (document.fullscreenElement){ document.exitFullscreen().catch(() => {}); return true; }
+  if (episodes){ episodes = null; renderList(); return true; }
+  if (query){ query = ''; $('#q').value = ''; renderList(); return true; }
+  return false;
+};
+
+/* Início: com servidor, pede o código só na primeira vez; sem servidor, abre a última lista local */
+(async () => {
+  if (!LOCKED()){
+    const old = store.get('source', null), oldXt = store.get('xtream', null);
+    if (!lists.length && old){
+      if (old.type === 'xtream' && oldXt){ lists.push({ id:'l0', type:'xtream', name:oldXt.u, ...oldXt }); activeId = 'l0'; }
+      else if (old.type === 'm3u' && old.text && old.text !== DEMO){ await idb.set('l0', old.text); lists.push({ id:'l0', type:'file', name:'Minha lista' }); activeId = 'l0'; }
+      saveLists(); store.set('source', null); store.set('xtream', null);
+    }
+    return startLists();
+  }
+  const a0 = auth.get();
+  const usable = a0?.pass && (a0.mode === 'dns' ? dnsList().length > 0 : CLOUD);
+  if (!usable){
+    if (!a0){ lists = []; activeId = null; saveLists(); }   // listas locais antigas não valem no modo com login
+    data = { live:[], movie:[], series:[] }; render(); showLogin(); return;
+  }
+  const st = await syncAccount();
+  if (st !== 'ok' && st !== 'changed' && st !== 'offline') return denied(st);
+  /* Servidor não confirmou o login agora (instável): segue com o login salvo, mesmo se a lista salva tiver se perdido */
+  const a1 = auth.get();
+  if (st === 'offline' && a1 && a1.mode === 'dns' && a1.pass && !lists.find(l => l.id === activeId)){
+    lists = [{ id:'dns', type:'xtream', name:'MG PRO', s:(dnsList().includes(a1.s) ? a1.s : dnsList()[0]) || a1.s, u:a1.u, p:a1.pass }];
+    activeId = 'dns'; saveLists();
+  }
+  await startLists();
+  if (st === 'offline') toast('Sem conexão com o servidor. Usando suas listas salvas.');
+  warnExpiry();
+  /* Confere a cada 15 minutos se o fornecedor mudou algo */
+  setInterval(async () => {
+    const r = await syncAccount(true);   // conferência de rotina: só aplica mudanças de lista, nunca derruba quem está assistindo
+    if (r === 'changed'){
+      const l = lists.find(x => x.id === activeId);
+      if (l) await openList(l);
+      else { stopPlayer(); data = { live:[], movie:[], series:[] }; render(); }
+      toast('Suas listas foram atualizadas');
+    }
+  }, 15 * 60e3);
+})();
+</script>
+</body>
+</html>
